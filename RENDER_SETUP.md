@@ -97,6 +97,8 @@ Reserve `content.desmos.lol` for embedded third-party content, not the main Note
 
 ## Troubleshooting
 
+- **A health503 log but the Render URL now returns200:** check the log timestamp and deployment it belongs to. Compare the current `https://YOUR-SERVICE.onrender.com/api/health` response before changing code. A historical log alone does not prove the current release is failing.
+- **Render URL works but custom-domainHTTPS fails:** check Settings→Custom Domains for domain verification and certificate status. Compare wildcard validation targets with the exact values Render supplies. A TLS handshake failure occurs before the app's health handler and is not fixed by adding MongoDB, changing CORS, or forcing the health response to200.
 - **Old MongoDB503 health response:** the server is running older code. Deploy the latest commit and check the new response above.
 - **Model429/503:** automatic retries tried available free alternatives or stopped at the shared quota/wait/time limit. Expand the attempt list for model-level results. The unsent message remains a local draft; retry later. There is no paid fallback.
 - **Model401/402:** verify the server-side key/account limits. No paid request is substituted.
