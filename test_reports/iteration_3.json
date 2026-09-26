@@ -1,0 +1,91 @@
+{
+  "summary": "Executed backend + frontend regression for leave-warning behavior, calculator ans chaining, GN covers, /web reader isolation, and WebGL representative titles.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "/browse/service/*",
+        "issue": "Public preview still returns React SPA HTML (HTTP 200) instead of non-SPA failure response (expected 503/404 behavior for non-controlled service route).",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Web reader iframe links",
+        "issue": "Reader link interaction path is broken: inline script execution is blocked by CSP inside srcdoc, so in-frame navigation hooks cannot run.",
+        "selector": "[data-testid='browser-iframe']",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Web reader (example.com)"
+        ,"issue": "Example Domain content loads and no bundle.js request is made, but console shows CSP inline-script violation and reader cannot be proven to navigate via in-frame link click.",
+        "affected_selectors": [
+          "[data-testid='browser-address']",
+          "[data-testid='proxy-status']",
+          "[data-testid='browser-iframe']"
+        ]
+      },
+      {
+        "flow": "Deterministic Wisp failover injected test",
+        "issue": "Injected first-endpoint WebSocket failure did not surface attempt rows in UI (status reached Connected·2, attempts list empty), so deterministic failover observability is still not exposed in current UI.",
+        "affected_selectors": [
+          "[data-testid='proxy-status']",
+          "[data-testid^='proxy-server-']"
+        ]
+      },
+      {
+        "flow": "WebGL runtime on representative 3D titles",
+        "issue": "Games boot and create WebGL2 contexts, but multiple runtime errors persist (e.g., slope: 'Uncaught ReferenceError: e is not defined'; 3D-flight-simulator: missing script references/shader compile errors/404 assets).",
+        "affected_selectors": [
+          "[data-testid='play-slope.html']",
+          "[data-testid='play-tunnel-rush.html']",
+          "[data-testid='play-3D-flight-simulator.html']",
+          "[data-testid='game-iframe']"
+        ]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Web",
+        "issues": [
+          "Reader footer message is present and clear.",
+          "No layout overflow at 320/768/1024/1440 in calculator view."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration3_regressions.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/test_reports/pytest/pytest_iteration3_regressions.xml",
+    "/app/test_reports/render-build.log"
+  ],
+  "action_items": [
+    "Fix reader srcdoc script/CSP nonce mismatch so in-frame link navigation posts messages correctly.",
+    "Fix /browse/service/* production route behavior to avoid SPA fallback on service path.",
+    "Add deterministic failover telemetry/UI state for first-fail second-success endpoint proof.",
+    "Investigate WebGL title-specific runtime errors (Unity JS exception, missing scripts/assets, shader compile failures) without relaxing sandbox policy."
+  ],
+  "critical_code_review_comments": [
+    "reader.js forbids nonce in DOMPurify then injects CSP nonce-based inline script; resulting srcdoc contains inline script without nonce and gets blocked.",
+    "Game iframe intentionally omits allow-same-origin for app-origin srcDoc which protects isolation but prevents deep frame introspection from parent tests.",
+    "Render build exists and compiles, but large chunks remain (>1MB gzipped) and should be optimized separately."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration3_regressions.py",
+    "/app/test_reports/iteration_3.json"
+  ],
+  "success_rate": {
+    "backend": "94%",
+    "frontend": "72%"
+  },
+  "seed_data_creation": "No new seeded DB data created; only transient API reads/GET content calls and UI interactions.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend full suite: 17 passed, 1 failed (/browse/service SPA fallback). Calculator ans flows now pass for 2+3=>5, ans+2=>7, plus negative/fractional chaining. /api/games returns 300 with 158 covers and local PNG map count matches 158. Reader mode loads example.com and avoids bundle.js fallback, but CSP blocks inline script so in-frame link navigation cannot be validated and likely broken. WebGL contexts initialize in tested titles, yet runtime/content-specific errors remain (Unity exceptions, missing scripts, shader errors).",
+  "rca of the issue": "Primary RCA: In reader.js, DOMPurify FORBID_ATTR includes 'nonce', then CSP in srcdoc requires script nonce, but injected script loses nonce and is blocked (console CSP violation), breaking click-to-navigate messaging. Secondary RCA: /browse/service route on preview returns SPA HTML 200, indicating fallback boundary still allows app shell on service path. WebGL RCA: failures are content/runtime-specific (Unity build errors, missing assets, shader compile issues), not a blanket browser WebGL unavailability; contexts are created successfully in Chromium headless run."
+}

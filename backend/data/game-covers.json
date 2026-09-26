@@ -1,0 +1,792 @@
+{
+  "10-minutes-till-dawn.html": {
+    "cover": "/covers/430.png",
+    "source_title": "10 Minutes Till Dawn",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/430.png"
+  },
+  "12-mini-battles.html": {
+    "cover": "/covers/295.png",
+    "source_title": "12 Mini Battles",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/295.png"
+  },
+  "1v1.lol.html": {
+    "cover": "/covers/58.png",
+    "source_title": "1v1.LoL",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/58.png"
+  },
+  "2048.html": {
+    "cover": "/covers/114.png",
+    "source_title": "2048",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/114.png"
+  },
+  "8-ball-classic.html": {
+    "cover": "/covers/146.png",
+    "source_title": "8 Ball Classic",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/146.png"
+  },
+  "ages-of-conflict.html": {
+    "cover": "/covers/444.png",
+    "source_title": "Ages of Conflict",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/444.png"
+  },
+  "angry-birds.html": {
+    "cover": "/covers/63.png",
+    "source_title": "Angry Birds",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/63.png"
+  },
+  "awesome-tanks-2.html": {
+    "cover": "/covers/438.png",
+    "source_title": "Awesome Tanks 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/438.png"
+  },
+  "awesome-tanks.html": {
+    "cover": "/covers/436.png",
+    "source_title": "Awesome Tanks",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/436.png"
+  },
+  "backrooms.html": {
+    "cover": "/covers/64.png",
+    "source_title": "Backrooms",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/64.png"
+  },
+  "bacon-may-die.html": {
+    "cover": "/covers/268.png",
+    "source_title": "Bacon May Die",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/268.png"
+  },
+  "bad-ice-cream-2.html": {
+    "cover": "/covers/270.png",
+    "source_title": "Bad Ice Cream 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/270.png"
+  },
+  "bad-ice-cream-3.html": {
+    "cover": "/covers/271.png",
+    "source_title": "Bad Ice Cream 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/271.png"
+  },
+  "bad-ice-cream.html": {
+    "cover": "/covers/269.png",
+    "source_title": "Bad Ice Cream",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/269.png"
+  },
+  "bad-piggies.html": {
+    "cover": "/covers/752.png",
+    "source_title": "Bad Piggies",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/752.png"
+  },
+  "baldis-basics.html": {
+    "cover": "/covers/65.png",
+    "source_title": "Baldi's Basics",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/65.png"
+  },
+  "baseball-bros.html": {
+    "cover": "/covers/547.png",
+    "source_title": "Baseball Bros",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/547.png"
+  },
+  "basket-bros.html": {
+    "cover": "/covers/285.png",
+    "source_title": "Basket Bros",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/285.png"
+  },
+  "basket-random.html": {
+    "cover": "/covers/66.png",
+    "source_title": "Basket Random",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/66.png"
+  },
+  "basketball-stars.html": {
+    "cover": "/covers/272.png",
+    "source_title": "Basketball Stars",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/272.png"
+  },
+  "bit-planes.htm": {
+    "cover": "/covers/330.png",
+    "source_title": "BitPlanes",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/330.png"
+  },
+  "bitlife.html": {
+    "cover": "/covers/70.png",
+    "source_title": "BitLife",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/70.png"
+  },
+  "blocky-snakes.html": {
+    "cover": "/covers/168.png",
+    "source_title": "Blocky Snakes",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/168.png"
+  },
+  "bloons-TD-2.html": {
+    "cover": "/covers/72.png",
+    "source_title": "Bloons TD 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/72.png"
+  },
+  "bloons-TD-3.html": {
+    "cover": "/covers/73.png",
+    "source_title": "Bloons TD 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/73.png"
+  },
+  "bloons-TD-4.html": {
+    "cover": "/covers/74.png",
+    "source_title": "Bloons TD 4",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/74.png"
+  },
+  "bloons-TD-5.html": {
+    "cover": "/covers/75.png",
+    "source_title": "Bloons TD 5",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/75.png"
+  },
+  "bloxorz.html": {
+    "cover": "/covers/169.png",
+    "source_title": "Bloxorz",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/169.png"
+  },
+  "blumgi-rocket.html": {
+    "cover": "/covers/353.png",
+    "source_title": "Blumgi Rocket",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/353.png"
+  },
+  "bob-the-robber-2.html": {
+    "cover": "/covers/76.png",
+    "source_title": "Bob The Robber 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/76.png"
+  },
+  "bow-masters.html": {
+    "cover": "/covers/0.png",
+    "source_title": "Bowmasters",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/0.png"
+  },
+  "boxing-random.htm": {
+    "cover": "/covers/77.png",
+    "source_title": "Boxing Random",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/77.png"
+  },
+  "candy-crush.html": {
+    "cover": "/covers/171.png",
+    "source_title": "Candy Crush",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/171.png"
+  },
+  "choppy-orc.html": {
+    "cover": "/covers/464.png",
+    "source_title": "Choppy Orc",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/464.png"
+  },
+  "circloO-2.html": {
+    "cover": "/covers/275.png",
+    "source_title": "CircloO 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/275.png"
+  },
+  "circloO.html": {
+    "cover": "/covers/274.png",
+    "source_title": "CircloO",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/274.png"
+  },
+  "clash-of-vikings.html": {
+    "cover": "/covers/545.png",
+    "source_title": "Clash Of Vikings",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/545.png"
+  },
+  "cluster-rush.html": {
+    "cover": "/covers/81.png",
+    "source_title": "Cluster Rush",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/81.png"
+  },
+  "cookie-clicker.htm": {
+    "cover": "/covers/82.png",
+    "source_title": "Cookie Clicker",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/82.png"
+  },
+  "crazy-cars.html": {
+    "cover": "/covers/331.png",
+    "source_title": "Crazy Cars",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/331.png"
+  },
+  "crazy-cattle-3D.html": {
+    "cover": "/covers/164.png",
+    "source_title": "Crazy Cattle 3D",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/164.png"
+  },
+  "crossy-road.htm": {
+    "cover": "/covers/24.png",
+    "source_title": "Crossy Road",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/24.png"
+  },
+  "dadish-2.html": {
+    "cover": "/covers/355.png",
+    "source_title": "Dadish 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/355.png"
+  },
+  "dadish-3.html": {
+    "cover": "/covers/356.png",
+    "source_title": "Dadish 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/356.png"
+  },
+  "dadish.html": {
+    "cover": "/covers/357.png",
+    "source_title": "Dadish",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/357.png"
+  },
+  "death-run-3D.html": {
+    "cover": "/covers/211.png",
+    "source_title": "Death Run 3D",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/211.png"
+  },
+  "doodle-jump.html": {
+    "cover": "/covers/470.png",
+    "source_title": "Doodle Jump",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/470.png"
+  },
+  "draw-climber.html": {
+    "cover": "/covers/86.png",
+    "source_title": "Draw Climber",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/86.png"
+  },
+  "dreadhead-parkour.htm": {
+    "cover": "/covers/310.png",
+    "source_title": "Dreadhead Parkour",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/310.png"
+  },
+  "drift-boss.htm": {
+    "cover": "/covers/276.png",
+    "source_title": "Drift Boss",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/276.png"
+  },
+  "duck-life-2.html": {
+    "cover": "/covers/235.png",
+    "source_title": "Duck Life 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/235.png"
+  },
+  "duck-life-3.html": {
+    "cover": "/covers/236.png",
+    "source_title": "Duck Life 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/236.png"
+  },
+  "duck-life-4.html": {
+    "cover": "/covers/237.png",
+    "source_title": "Duck Life 4",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/237.png"
+  },
+  "duck-life-5.html": {
+    "cover": "/covers/238.png",
+    "source_title": "Duck Life 5",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/238.png"
+  },
+  "duck-life.html": {
+    "cover": "/covers/234.png",
+    "source_title": "Duck Life",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/234.png"
+  },
+  "escape-road-2.html": {
+    "cover": "/covers/265.png",
+    "source_title": "Escape Road 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/265.png"
+  },
+  "escape-road.html": {
+    "cover": "/covers/264.png",
+    "source_title": "Escape Road",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/264.png"
+  },
+  "evil-glitch.html": {
+    "cover": "/covers/277.png",
+    "source_title": "Evil Glitch",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/277.png"
+  },
+  "fancy-pants-adventure-2.html": {
+    "cover": "/covers/334.png",
+    "source_title": "Fancy Pants Adventure 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/334.png"
+  },
+  "fancy-pants-adventure.html": {
+    "cover": "/covers/333.png",
+    "source_title": "Fancy Pants Adventure",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/333.png"
+  },
+  "fireboy-and-watergirl-2.html": {
+    "cover": "/covers/88.png",
+    "source_title": "Fireboy and Watergirl 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/88.png"
+  },
+  "fireboy-and-watergirl-3.html": {
+    "cover": "/covers/89.png",
+    "source_title": "Fireboy and Watergirl 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/89.png"
+  },
+  "flappy-bird.html": {
+    "cover": "/covers/129.png",
+    "source_title": "Flappy Bird",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/129.png"
+  },
+  "football-bros.html": {
+    "cover": "/covers/548.png",
+    "source_title": "Football Bros",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/548.png"
+  },
+  "fruit-ninja.html": {
+    "cover": "/covers/261.png",
+    "source_title": "Fruit Ninja",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/261.png"
+  },
+  "geometry-dash.html": {
+    "cover": "/covers/785.png",
+    "source_title": "Geometry Dash",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/785.png"
+  },
+  "getaway-shootout.htm": {
+    "cover": "/covers/338.png",
+    "source_title": "Getaway Shootout",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/338.png"
+  },
+  "granny-2.html": {
+    "cover": "/covers/125.png",
+    "source_title": "Granny 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/125.png"
+  },
+  "granny.html": {
+    "cover": "/covers/90.png",
+    "source_title": "Granny",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/90.png"
+  },
+  "guess-their-answer.html": {
+    "cover": "/covers/155.png",
+    "source_title": "Guess Their Answer",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/155.png"
+  },
+  "happy-wheels.html": {
+    "cover": "/covers/624.png",
+    "source_title": "Happy Wheels",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/624.png"
+  },
+  "hill-climb-racing-lite.html": {
+    "cover": "/covers/157.png",
+    "source_title": "Hill Climb Racing Lite",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/157.png"
+  },
+  "house-of-hazards.html": {
+    "cover": "/covers/339.png",
+    "source_title": "House of Hazards",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/339.png"
+  },
+  "idle-breakout.html": {
+    "cover": "/covers/362.png",
+    "source_title": "Idle Breakout",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/362.png"
+  },
+  "jetpack-joyride.html": {
+    "cover": "/covers/7.png",
+    "source_title": "Jetpack Joyride",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/7.png"
+  },
+  "johnny-trigger.html": {
+    "cover": "/covers/93.png",
+    "source_title": "Johnny Trigger",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/93.png"
+  },
+  "learn-to-fly-2.html": {
+    "cover": "/covers/341.png",
+    "source_title": "Learn to Fly 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/341.png"
+  },
+  "learn-to-fly-3.html": {
+    "cover": "/covers/342.png",
+    "source_title": "Learn to Fly 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/342.png"
+  },
+  "learn-to-fly-idle.html": {
+    "cover": "/covers/343.png",
+    "source_title": "Learn to Fly Idle",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/343.png"
+  },
+  "learn-to-fly.html": {
+    "cover": "/covers/340.png",
+    "source_title": "Learn to Fly",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/340.png"
+  },
+  "madalin-stunt-cars-2.html": {
+    "cover": "/covers/278.png",
+    "source_title": "Madalin Stunt Cars 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/278.png"
+  },
+  "melon-playground.html": {
+    "cover": "/covers/172.png",
+    "source_title": "Melon Playground",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/172.png"
+  },
+  "monster-tracks.html": {
+    "cover": "/covers/36.png",
+    "source_title": "Monster Tracks",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/36.png"
+  },
+  "moto-x3m-2.html": {
+    "cover": "/covers/97.png",
+    "source_title": "Moto X3M 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/97.png"
+  },
+  "moto-x3m-3.html": {
+    "cover": "/covers/98.png",
+    "source_title": "Moto X3M 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/98.png"
+  },
+  "moto-x3m-winter.html": {
+    "cover": "/covers/100.png",
+    "source_title": "Moto X3M Winter",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/100.png"
+  },
+  "moto-x3m.htm": {
+    "cover": "/covers/96.png",
+    "source_title": "Moto X3M",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/96.png"
+  },
+  "ovo-2.html": {
+    "cover": "/covers/2.png",
+    "source_title": "OvO 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/2.png"
+  },
+  "ovo-3-dimensions.html": {
+    "cover": "/covers/3.png",
+    "source_title": "OvO 3 Dimensions",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/3.png"
+  },
+  "ovo.html": {
+    "cover": "/covers/1.png",
+    "source_title": "OvO",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/1.png"
+  },
+  "papas-bakeria.html": {
+    "cover": "/covers/218.png",
+    "source_title": "Papa's Bakeria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/218.png"
+  },
+  "papas-burgeria.html": {
+    "cover": "/covers/219.png",
+    "source_title": "Papa's Burgeria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/219.png"
+  },
+  "papas-cheeseria.html": {
+    "cover": "/covers/220.png",
+    "source_title": "Papa's Cheeseria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/220.png"
+  },
+  "papas-cupcakeria.html": {
+    "cover": "/covers/221.png",
+    "source_title": "Papa's Cupcakeria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/221.png"
+  },
+  "papas-donuteria.html": {
+    "cover": "/covers/222.png",
+    "source_title": "Papa's Donuteria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/222.png"
+  },
+  "papas-freezeria.html": {
+    "cover": "/covers/223.png",
+    "source_title": "Papa's Freezeria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/223.png"
+  },
+  "papas-hot-doggeria.html": {
+    "cover": "/covers/224.png",
+    "source_title": "Papa's Hot Doggeria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/224.png"
+  },
+  "papas-pancakeria.html": {
+    "cover": "/covers/225.png",
+    "source_title": "Papa's Pancakeria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/225.png"
+  },
+  "papas-pastaria.html": {
+    "cover": "/covers/226.png",
+    "source_title": "Papa's Pastaria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/226.png"
+  },
+  "papas-scooperia.html": {
+    "cover": "/covers/228.png",
+    "source_title": "Papa's Scooperia",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/228.png"
+  },
+  "papas-sushiria.html": {
+    "cover": "/covers/229.png",
+    "source_title": "Papa's Sushiria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/229.png"
+  },
+  "papas-taco-mia.html": {
+    "cover": "/covers/230.png",
+    "source_title": "Papa's Taco Mia",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/230.png"
+  },
+  "papas-wingeria.html": {
+    "cover": "/covers/231.png",
+    "source_title": "Papa's Wingeria",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/231.png"
+  },
+  "paper-io-2.htm": {
+    "cover": "/covers/102.png",
+    "source_title": "Paper.io 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/102.png"
+  },
+  "plants-vs-zombies.html": {
+    "cover": "/covers/232.png",
+    "source_title": "Plants vs Zombies",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/232.png"
+  },
+  "polytrack.html": {
+    "cover": "/covers/123.png",
+    "source_title": "Poly Track",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/123.png"
+  },
+  "pou.html": {
+    "cover": "/covers/23.png",
+    "source_title": "Pou",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/23.png"
+  },
+  "ragdoll-archers.htm": {
+    "cover": "/covers/186.png",
+    "source_title": "Ragdoll Archers",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/186.png"
+  },
+  "ragdoll-hit.html": {
+    "cover": "/covers/44.png",
+    "source_title": "Ragdoll Hit",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/44.png"
+  },
+  "red-ball-4-vol-2.html": {
+    "cover": "/covers/243.png",
+    "source_title": "Red Ball 4 Vol. 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/243.png"
+  },
+  "red-ball-4-vol-3.html": {
+    "cover": "/covers/244.png",
+    "source_title": "Red Ball 4 Vol. 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/244.png"
+  },
+  "retro-bowl-college.html": {
+    "cover": "/covers/34.png",
+    "source_title": "Retro Bowl College",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/34.png"
+  },
+  "retro-bowl.html": {
+    "cover": "/covers/33.png",
+    "source_title": "Retro Bowl",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/33.png"
+  },
+  "riddle-school-2.html": {
+    "cover": "/covers/288.png",
+    "source_title": "Riddle School 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/288.png"
+  },
+  "rooftop-snipers-2.html": {
+    "cover": "/covers/490.png",
+    "source_title": "Rooftop Snipers 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/490.png"
+  },
+  "rooftop-snipers.htm": {
+    "cover": "/covers/283.png",
+    "source_title": "Rooftop Snipers",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/283.png"
+  },
+  "run-2.html": {
+    "cover": "/covers/176.png",
+    "source_title": "Run 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/176.png"
+  },
+  "run-3.html": {
+    "cover": "/covers/177.png",
+    "source_title": "Run 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/177.png"
+  },
+  "slope.html": {
+    "cover": "/covers/198.png",
+    "source_title": "Slope",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/198.png"
+  },
+  "slow-roads.html": {
+    "cover": "/covers/369.png",
+    "source_title": "Slowroads",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/369.png"
+  },
+  "soccer-random.htm": {
+    "cover": "/covers/739.png",
+    "source_title": "Soccer Random",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/739.png"
+  },
+  "space-waves.html": {
+    "cover": "/covers/117.png",
+    "source_title": "Space Waves",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/117.png"
+  },
+  "spacebar-clicker.html": {
+    "cover": "/covers/473.png",
+    "source_title": "Spacebar Clicker",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/473.png"
+  },
+  "speed-stars.html": {
+    "cover": "/covers/266.png",
+    "source_title": "Speed Stars",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/266.png"
+  },
+  "sprunki.html": {
+    "cover": "/covers/9.png",
+    "source_title": "Sprunki",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/9.png"
+  },
+  "state-io.html": {
+    "cover": "/covers/161.png",
+    "source_title": "State.io",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/161.png"
+  },
+  "stickman-hook.html": {
+    "cover": "/covers/11.png",
+    "source_title": "Stickman Hook",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/11.png"
+  },
+  "super-star-car.html": {
+    "cover": "/covers/579.png",
+    "source_title": "Super Star Car",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/579.png"
+  },
+  "superhot.html": {
+    "cover": "/covers/233.png",
+    "source_title": "Superhot",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/233.png"
+  },
+  "tag.html": {
+    "cover": "/covers/627.png",
+    "source_title": "Tag",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/627.png"
+  },
+  "temple-run-2.htm": {
+    "cover": "/covers/10.png",
+    "source_title": "Temple Run 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/10.png"
+  },
+  "territorial-io.html": {
+    "cover": "/covers/303.png",
+    "source_title": "Territorial.io",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/303.png"
+  },
+  "the-impossible-quiz.html": {
+    "cover": "/covers/507.png",
+    "source_title": "The Impossible Quiz",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/507.png"
+  },
+  "they-are-coming.html": {
+    "cover": "/covers/348.png",
+    "source_title": "They Are Coming",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/348.png"
+  },
+  "this-is-the-only-level.html": {
+    "cover": "/covers/106.png",
+    "source_title": "This Is The Only Level",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/106.png"
+  },
+  "time-shooter-2.html": {
+    "cover": "/covers/200.png",
+    "source_title": "Time Shooter 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/200.png"
+  },
+  "tiny-fishing.html": {
+    "cover": "/covers/108.png",
+    "source_title": "Tiny Fishing",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/108.png"
+  },
+  "tomb-of-the-mask.htm": {
+    "cover": "/covers/109.png",
+    "source_title": "Tomb Of The Mask",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/109.png"
+  },
+  "trivia-crack.html": {
+    "cover": "/covers/163.png",
+    "source_title": "Trivia Crack",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/163.png"
+  },
+  "tube-jumpers.html": {
+    "cover": "/covers/111.png",
+    "source_title": "Tube Jumpers",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/111.png"
+  },
+  "tunnel-rush.html": {
+    "cover": "/covers/206.png",
+    "source_title": "Tunnel Rush",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/206.png"
+  },
+  "vex-4.html": {
+    "cover": "/covers/49.png",
+    "source_title": "Vex 4",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/49.png"
+  },
+  "vex-5.html": {
+    "cover": "/covers/50.png",
+    "source_title": "Vex 5",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/50.png"
+  },
+  "vex-6.htm": {
+    "cover": "/covers/51.png",
+    "source_title": "Vex 6",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/51.png"
+  },
+  "vex-7.htm": {
+    "cover": "/covers/52.png",
+    "source_title": "Vex 7",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/52.png"
+  },
+  "vex-8.htm": {
+    "cover": "/covers/53.png",
+    "source_title": "Vex 8",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/53.png"
+  },
+  "vex-x3m-2.html": {
+    "cover": "/covers/56.png",
+    "source_title": "Vex X3M 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/56.png"
+  },
+  "vex-x3m.html": {
+    "cover": "/covers/55.png",
+    "source_title": "Vex X3M",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/55.png"
+  },
+  "volley-random.html": {
+    "cover": "/covers/786.png",
+    "source_title": "Volley Random",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/786.png"
+  },
+  "we-become-what-we-behold.html": {
+    "cover": "/covers/671.png",
+    "source_title": "We Become What We Behold",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/671.png"
+  },
+  "wheely-2.html": {
+    "cover": "/covers/246.png",
+    "source_title": "Wheely 2",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/246.png"
+  },
+  "wheely-3.html": {
+    "cover": "/covers/247.png",
+    "source_title": "Wheely 3",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/247.png"
+  },
+  "wheely-4.html": {
+    "cover": "/covers/248.png",
+    "source_title": "Wheely 4",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/248.png"
+  },
+  "wheely-5.html": {
+    "cover": "/covers/249.png",
+    "source_title": "Wheely 5",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/249.png"
+  },
+  "wheely-6.html": {
+    "cover": "/covers/250.png",
+    "source_title": "Wheely 6",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/250.png"
+  },
+  "wheely-7.html": {
+    "cover": "/covers/251.png",
+    "source_title": "Wheely 7",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/251.png"
+  },
+  "wheely-8.html": {
+    "cover": "/covers/252.png",
+    "source_title": "Wheely 8",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/252.png"
+  },
+  "wheely.html": {
+    "cover": "/covers/245.png",
+    "source_title": "Wheely",
+    "source_url": "https://raw.githubusercontent.com/gn-math/covers/main/245.png"
+  }
+}

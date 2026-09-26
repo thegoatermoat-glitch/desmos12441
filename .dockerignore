@@ -1,0 +1,17 @@
+.git
+.emergent
+.render-venv
+**/node_modules
+**/build
+**/__pycache__
+**/.pytest_cache
+**/.env
+**/.env.*
+**/*.pyc
+backend/game_cache
+backend/tests
+tests
+test_reports
+memory
+**/*.log
+frontend/plugins

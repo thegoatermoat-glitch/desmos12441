@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: desmos-testing
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: MONGO_URL
+        sync: false
+      - key: DB_NAME
+        value: desmos_testing
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: APP_ORIGIN
+        fromService:
+          name: desmos-testing
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: CORS_ORIGINS
+        fromService:
+          name: desmos-testing
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: HOST
+        value: 0.0.0.0
+      - key: CONTENT_ORIGIN
+        value: ''
+      - key: SERVE_FRONTEND
+        value: 'true'
+      - key: FRONTEND_BUILD_DIR
+        value: /app/frontend/build
+      - key: OPENROUTER_MODEL
+        value: google/gemini-2.5-flash-lite
+      - key: OPENROUTER_FALLBACK_MODEL
+        value: openai/gpt-4o-mini
+      - key: OPENROUTER_URL
+        value: https://openrouter.ai/api/v1/chat/completions
+      - key: WISP_ENDPOINTS
+        value: wss://wisp-proxy.emergent.host/api/wisp,wss://wisp-proxy.emergent.host/api/wisp2
+      - key: GAME_RAW_BASE
+        value: https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/
+      - key: GAME_SOURCE_URL
+        value: https://github.com/CoolDude2349/Offline-HTML-Games-Pack/tree/master/offline
+      - key: GAME_CACHE_DIR
+        value: /tmp/library-cache
+      - key: GAME_MAX_BYTES
+        value: '100000000'
+      - key: GAME_CACHE_MAX_BYTES
+        value: '500000000'

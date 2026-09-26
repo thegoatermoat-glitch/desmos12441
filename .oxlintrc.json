@@ -1,0 +1,13 @@
+{
+  "ignorePatterns": [
+    "frontend/public/scramjet/**",
+    "frontend/public/bare-mux/**",
+    "frontend/public/epoxy/**",
+    "frontend/build/**"
+  ],
+  "globals": {
+    "registration": "readonly",
+    "clients": "readonly",
+    "define": "readonly"
+  }
+}

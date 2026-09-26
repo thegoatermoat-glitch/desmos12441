@@ -1,0 +1,99 @@
+{
+  "project_title": "Desmos Scientific Companion Redesign",
+  "document_settings": {
+    "document_title": "Desmos | Testing",
+    "favicon_url": "https://customer-assets-cm19k8pv.emergentagent.net/job_calc-unblocked/artifacts/izz9rm1p_www.desmos.webp",
+    "meta_icon": "https://customer-assets-cm19k8pv.emergentagent.net/job_calc-unblocked/artifacts/izz9rm1p_www.desmos.webp"
+  },
+  "censorship_rules": {
+    "blocked_words": ["games", "unblocked", "proxy", "ai"],
+    "replacements": {
+      "games": "activities",
+      "unblocked": "accessible",
+      "proxy": "resource node",
+      "ai": "assistant",
+      "AI assistant": "Study Assistant",
+      "Games": "Activities",
+      "Game": "Activity",
+      "Browser": "Web Resources"
+    },
+    "leave_confirmation_description": ""
+  },
+  "typography": {
+    "font_family": "Open Sans, sans-serif",
+    "headings": {
+      "h1": "font-size: 32px; font-weight: 500; color: #273c30;",
+      "h2": "font-size: 20px; font-weight: 600; color: #3f5746;",
+      "h3": "font-size: 16px; font-weight: 600; color: #4e6642;"
+    },
+    "body": "font-size: 13px; color: #333333; line-height: 1.6;",
+    "eyebrow": "font-size: 10px; font-weight: 600; color: #107b3f; letter-spacing: 0.05em;"
+  },
+  "colors": {
+    "primary": "#107b3f",
+    "primary_dark": "#096432",
+    "primary_light": "#edf6f0",
+    "accent_blue": "#2d70d8",
+    "ink": "#333333",
+    "muted": "#7b807e",
+    "line": "#dcdedc",
+    "surface": "#f7f8f7",
+    "card_background": "#ffffff",
+    "card_border": "#e4e8e3"
+  },
+  "layouts": {
+    "header": {
+      "height": "50px",
+      "background": "#107b3f",
+      "text_color": "#ffffff",
+      "divider": "1px solid rgba(255,255,255,0.4)"
+    },
+    "companion_nav": {
+      "height": "58px",
+      "background": "#ffffff",
+      "border_bottom": "1px solid #e8ebe8",
+      "active_tab": "color: #107b3f; border-bottom: 2px solid #107b3f;"
+    },
+    "calculator": {
+      "width": "540px",
+      "height": "440px",
+      "border": "1px solid #c5c5c5",
+      "background": "#ffffff"
+    }
+  },
+  "components": {
+    "leave_confirmation": {
+      "component_path": "/app/frontend/src/components/LeaveConfirmation.jsx",
+      "action": "Remove leave description text: 'Your calculations and conversations are saved. A game in progress may be lost.'"
+    },
+    "header": {
+      "component_path": "/app/frontend/src/components/Header.jsx",
+      "action": "Update labels: 'AI assistant' -> 'Assistant', 'Games' -> 'Activities', 'Browser' -> 'Web Resources'"
+    },
+    "activities_library": {
+      "component_path": "/app/frontend/src/pages/Games.jsx",
+      "action": "Humanize copy and remove game/proxy/unblocked mentions"
+    },
+    "study_assistant": {
+      "component_path": "/app/frontend/src/pages/Chat.jsx",
+      "action": "Update labels from AI to Assistant/Study Assistant"
+    },
+    "web_resources": {
+      "component_path": "/app/frontend/src/pages/Browser.jsx",
+      "action": "Update proxy references to Resource Node and Web Resources"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Set document title to 'Desmos | Testing' and favicon to https://customer-assets-cm19k8pv.emergentagent.net/job_calc-unblocked/artifacts/izz9rm1p_www.desmos.webp",
+    "Preserve calculator layout and functionality exactly as implemented in /app/frontend/src/pages/Calculator.jsx",
+    "Censor visible blocked terms ('games', 'unblocked', 'proxy', 'ai') across navigation, page titles, captions, and empty states",
+    "Remove description from LeaveConfirmation dialog as requested",
+    "Ensure all interactive elements retain data-testid attributes for testing compatibility"
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Maintain high contrast and accessibility according to APCA/WCAG standards",
+    "All interactive elements MUST include data-testid attributes",
+    "Use smooth micro-interactions on hover and active states without breaking layout grids",
+    "Keep standard Desmos green (#107b3f) header style and clean white page canvas"
+  ]
+}
