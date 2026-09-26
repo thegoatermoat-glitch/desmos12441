@@ -56,6 +56,8 @@ This is **wildcard DNS routing**, not a new service or DNS record created for ev
 
 ## 4. Operational checks
 
+- **Docker says `/frontend/yarn.lock` not found:** use the current Dockerfile, which copies the frontend directory and uses a frozen lockfile when available. If a repository export omitted the lockfile, Yarn generates it during the image build instead of failing at Docker's COPY step. Including `frontend/yarn.lock` is still recommended for repeatable dependency versions. Save the updated project to GitHub, then redeploy the latest commit. Keep Root Directory blank and Docker Build Context `.`.
+
 ### Enable interactive websites and origin-dependent 3D titles
 
 Reserve `content.desmos.lol` as an isolated content origin, served by the **same Render service** through the wildcard domain you configured above. Then set `CONTENT_ORIGIN=https://content.desmos.lol` in Render and restart the service. Do not open the calculator or Notes on this reserved hostname. It must not equal the main app hostname. Do not set cookies for the entire `.desmos.lol` domain.
