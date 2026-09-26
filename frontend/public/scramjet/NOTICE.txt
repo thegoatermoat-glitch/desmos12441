@@ -1,0 +1,17 @@
+Scramjet runtime assets
+
+The four .js/.wasm files in this directory were distributed in
+@mercuryworkshop/scramjet version 1.1.0.
+
+Upstream source: https://github.com/MercuryWorkshop/scramjet
+Original package: https://registry.npmjs.org/@mercuryworkshop/scramjet/-/scramjet-1.1.0.tgz
+The LICENSE shipped with that package is preserved as LICENSE.txt.
+
+Local compatibility adjustment (2026-09-25): the all/bundle scripts declare
+registration and clients as aliases of their existing globalThis properties
+so static browser/worker validation recognizes those worker globals.
+
+These assets are served directly from this folder, not imported from an npm
+package at build time. On 2026-09-26 the unused npm dependency was removed
+to avoid its package-manager enforcement preinstall during clean Yarn builds.
+The served runtime assets and browser protocol were not changed by that removal.

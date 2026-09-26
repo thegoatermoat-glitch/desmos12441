@@ -1,0 +1,2 @@
+NODE20_BIN=/root/.npm/_npx/728c32f249a5a5ea/node_modules/node/bin/node
+v20.19.2

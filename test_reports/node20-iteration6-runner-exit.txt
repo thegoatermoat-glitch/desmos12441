@@ -1,0 +1,2 @@
+with_lock_script_exit=0
+no_lock_script_exit=0

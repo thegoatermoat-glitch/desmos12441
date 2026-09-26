@@ -35,8 +35,8 @@ Recreate https://www.desmos.com/testing/kentucky/scientific one-to-one. Clicking
 - Actual Render/Atlas/DNS account setup has not been performed. Docker CLI is not available in the workspace; production build/static hosting/configuration will be validated separately.
 
 ## Priority / next tasks
-- P0: Retest functional fixes and live integrations; verify Render production configuration and SPA hosting; complete deployment-readiness scan.
-- P1: User supplies Atlas URI and OpenRouter key in Render, configures Namecheap DNS and TLS; verify live wildcard hostnames after account setup.
+- P0: Native Node20.19.2 build failure RESOLVED and independently verified (iteration6). No remaining blocker identified for the reported build failure.
+- P1: User retries native Emergent deployment; validate the real production rollout and platform-managed Atlas connection. Earlier Render setup instructions remain only for users choosing that separate target.
 - P2: Isolated browsing origin for broader interactive site support; broader third-party title compatibility verification; optional conversation export.
 
 ## 2026-09-26 continuation
@@ -63,3 +63,17 @@ Recreate https://www.desmos.com/testing/kentucky/scientific one-to-one. Clicking
 - Public Wisp endpoints and arbitrary target websites cannot be guaranteed available.
 - Third-party game compatibility varies; do not promise every listed file is fully offline.
 - This is an independent recreation, not an official testing tool.
+
+## Native Emergent build bug — Node 20.19.2
+- Latest user target is native Emergent/Kubernetes, not the earlier Render setup. User explicitly forbids Docker-related changes and approved Node-20-compatible dependencies.
+- Reported yarn install failure: root Compute Engine0.135.0 requiresNode>=22.3.0. Direct dependency inspection also found MathLive0.110.0 pulls incompatible ComputeEngine0.58.0 (Node>=21.7.3), and KaTeX0.18.9 pulls Commander15 (Node>=22.12.0).
+- Original failure reproduced using exactNode20.19.2 and production install command; evidence `/app/test_reports/node20-before.log`.
+- Changed only application dependency versions using Yarn: ComputeEngine0.27.0, MathLive0.103.0 (transitive ComputeEngine0.24.1), KaTeX0.18.4 (Commander8). Exact pins and lockfile updated. MathLive public fonts resynchronized. No forced resolutions/engine bypass introduced for this fix.
+- Dockerfile/.dockerignore/Render scripts, protected MONGO_URL/DB_NAME, and auth configuration were NOT modified.
+- General deployment scanner initially returnedpass despite suppliedenginefailure; it is not sufficient evidence. Mandatory testing_agent verification must include strict clean install and build underNode20.19.2 plus calculator/KaTeX regression tests before this bug is calledfixed.
+- Iteration5 independenttests reproducedoriginalNode22engineerror, passedcalculator/KaTeXregressions and20/20fontchecks, but found strictfreshfixture install invoking Scramjet's `npx only-allow pnpm` preinstall. Npx-wrappedruntime can additionally leak npm_config_call into nestednpx; finalverification must put the exactNode20.19.2binary directlyonPATH toavoidtest-harnessartifacts.
+- Removedunused@mercuryworkshop/scramjet npmdependency viaYarn. Its already-vendored publicJS/WASMassets are preservedandcontinuebeingloadedbyworkspace/frame.htmlandserviceworker; noapplicationcodeimportedthepackage. OriginalpackageLICENSE copiedto public/scramjet/LICENSE.txt andprovenancedocumentedNOTICE.txt. Noengine/scriptbypassflags introduced.
+- VERIFIED by testing_agent iteration6: realstrictcleaninstall andproductionbuild underexactNode20.19.2/Yarn1.22.22 withlock ANDwithoutlock bothpass, withoutengine/scriptbypass. NativebinaryPATHused; wrappercheckalsopassedafterunusedpackageremoval. Reports/logs: `/app/test_reports/iteration_6.json` andnode20-iteration6-*.log.
+- Independentregressions:14/14pytestdependency/coreAPItests pass; calculatorarithmetic,ans,DEG/RADtrig,sqrt,fractions pass; NotesKaTeX/responsive/20fontchecks passiniteration5. VendoredScramjetJS/WASMreturn200withcorrectMIMEtypes. No APIsmocked.
+- Finaldeployment_agentrecheckreturnedPASS/nofindings. Actualproductionrollout has NOTbeenstarted orclaimedverifiedhere. Usernextaction: retry native Emergent deployment. Existing isolated-host/Unity limitations areunchangedandoutside thisdependencyfix.
+- Futuremaintenanceenhancement: automateexact-runtimeclean-install/build compatibilitytests on eachdependencyupdate. ExistingnonfatalYarnpeer/resolutionwarningscanbecleaned separately withoutremovingplatformsecurityresolutions.

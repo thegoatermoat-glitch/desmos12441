@@ -29,6 +29,14 @@ The two external Wisp endpoints are configurable and automatically retried in or
 
 ## Development / preview
 
+### Native deployment: Node 20 compatibility
+
+The managed build runs Node20.19.2 with Yarn engine checks enabled. Calculator dependencies are intentionally pinned to `@cortex-js/compute-engine@0.27.0`, `mathlive@0.103.0`, and `katex@0.18.4`. Newer releases of these libraries (or their transitive dependencies) require Node21/22. Do not replace these pins without testing the actual build runtime.
+
+The native build must pass `yarn install --prefer-offline --check-files --network-timeout 100000 && yarn build` **without** `--ignore-engines`. MathLive's vendored public fonts must match the installed MathLive version. This compatibility change does not alter Docker files or MongoDB configuration.
+
+Scramjet1.1.0 is already bundled in `frontend/public/scramjet` and loaded as static browser assets. Its unused npm dependency was removed: the package has a `preinstall` invoking a pnpm-only check, which needlessly interferes with clean Yarn installs. Keep the public JS/WASM files, LICENSE.txt, and NOTICE.txt; this removal does not disable the browser runtime. Bare-mux and the transport dependency remain installed.
+
 The preview environment retains React on port 3000, FastAPI on port 8001, and the existing `MONGO_URL`/`DB_NAME` settings. Render uses a separate production entrypoint; do not change the preview service ports.
 
 - Frontend: `yarn install --frozen-lockfile --ignore-engines`, then `yarn start`.

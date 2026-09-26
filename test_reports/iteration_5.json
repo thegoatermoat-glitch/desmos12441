@@ -1,0 +1,58 @@
+{
+  "summary": "Reproduced the original Node20 engine failure and validated current dependency behavior. Calculator/Notes regressions mostly pass on preview, but the mandatory strict Node20.19.2 install command still fails in a clean fixture due a new preinstall blocker in scramjet before build.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "frontend dependency install step (pre-build)",
+        "issue": "Strict clean install using exact command `npx --yes --package=node@20.19.2 -c 'node --version && yarn install --prefer-offline --check-files --network-timeout 100000'` fails at @mercuryworkshop/scramjet preinstall (`npx only-allow pnpm`) with npm EUSAGE, blocking production build verification under mandated runtime.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Native Node20.19.2 clean install in disposable fixture (with and without lock)",
+        "issue": "Install fails before build due scramjet preinstall `npx only-allow pnpm`; root compute-engine 0.135.0 blocker is fixed, but this is the next hard blocker.",
+        "affected_selectors": []
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_node20_dependency_guard.py",
+    "/app/test_reports/pytest/pytest_iteration5_backend.xml",
+    "/app/test_reports/node20-oldfail-repro2.log",
+    "/app/test_reports/node20-full-withlock-clean-exact.log",
+    "/app/test_reports/node20-full-nolock-clean-exact.log",
+    "/app/test_reports/node20-engine-audit.json",
+    "/app/test_reports/mathlive-font-audit.json",
+    "/app/test_reports/node20-full-system-install.log",
+    "/app/test_reports/node20-full-system-build.log"
+  ],
+  "action_items": [
+    "Fix/replace/pin @mercuryworkshop/scramjet dependency (or its preinstall behavior) so strict Node20.19.2 npx-based clean install succeeds without engine/script bypass flags.",
+    "After dependency fix, rerun strict exact-command install + production build under Node20.19.2 in clean fixtures for both lockfile and no-lockfile paths.",
+    "Keep current compute-engine/mathlive/katex pins and rerun the same calculator regression pack to confirm no math behavior drift after scramjet adjustment."
+  ],
+  "critical_code_review_comments": [
+    "`@mercuryworkshop/scramjet@1.1.0` includes `preinstall: npx only-allow pnpm`; this fails under mandated `npx --package=node@20.19.2 -c ... yarn install` flow and is now the primary deploy blocker.",
+    "Root package engine issue was correctly addressed: isolated old manifest still reproduces `@cortex-js/compute-engine@0.135.0` Node>=22.3.0 failure; current lock no longer resolves that version.",
+    "MathLive font sync is correct (20/20 files, byte/hash match with `node_modules/mathlive/dist/fonts`)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_node20_dependency_guard.py",
+    "/app/test_reports/iteration_5.json"
+  ],
+  "success_rate": {
+    "backend": "70%",
+    "frontend": "90%"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Old engine blocker reproduction confirmed via isolated old manifest (`node20-oldfail-repro2.log`). Current mandatory exact Node20.19.2 command fails on scramjet preinstall in both with-lock and no-lock clean fixtures. API smoke tests passed (core endpoints), dependency guard pytest passed, KaTeX rendering smoke passed in Notes, calculator feature checks (DEG/RAD, ans chaining, factorial/log/ln/abs/floor/ceil/percent, responsive widths 320/768/1440/1920) passed in browser automation.",
+  "rca of the issue": "RCA: (1) Reproduce old issue by setting `@cortex-js/compute-engine` back to 0.135.0 in isolated fixture -> exact Node20.19.2 command fails with engine mismatch (expected >=22.3.0). (2) On current dependency set, install progresses past engine checks but fails at `@mercuryworkshop/scramjet@1.1.0` preinstall script `npx only-allow pnpm` with npm EUSAGE under the mandated npx-wrapped Node invocation. (3) This prevents completion of required exact-runtime build verification even though dependency engines audit itself shows no package requiring >20.19.2 once installed under normal Node20 runtime. Mitigation: use a scramjet version or package path that does not enforce this preinstall in yarn consumer environments, then rerun strict Node20.19.2 clean install/build checks."
+}

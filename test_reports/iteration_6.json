@@ -1,0 +1,45 @@
+{
+  "summary": "Independent verification completed for Node20.19.2 native install/build path after scramjet npm removal. Strict clean installs and production builds passed with and without lockfile; dependency guard and core API tests passed; calculator and web smoke remained functional.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_node20_dependency_guard.py",
+    "/app/backend/tests/test_core_endpoints.py",
+    "/app/test_reports/pytest/pytest_iteration6_backend.xml",
+    "/app/test_reports/node20-iteration6-nodebin.txt",
+    "/app/test_reports/node20-iteration6-with-lock.log",
+    "/app/test_reports/node20-iteration6-no-lock.log",
+    "/app/test_reports/node20-iteration6-wrapper-check.log",
+    "/app/test_reports/node20-iteration6-dependency-scan.log",
+    "/app/test_reports/node20-iteration6-scramjet-http.log"
+  ],
+  "action_items": [
+    "No blocking fix identified for this Node20 dependency/build bug.",
+    "Optional: monitor/clean non-blocking Yarn resolution and peer warnings in future maintenance."
+  ],
+  "critical_code_review_comments": [
+    "No remaining @mercuryworkshop/scramjet npm dependency or lockfile entry detected; vendored runtime assets are still referenced and served.",
+    "Node20.19.2 strict install command now succeeds in clean fixtures for both lock and no-lock scenarios; production build succeeds in both.",
+    "Lockfile still resolves expected safe graph: compute-engine 0.27.0 and transitive 0.24.1, mathlive 0.103.0, katex 0.18.4, commander 8.3.0; forbidden CE 0.135/0.58 and commander 15 not found."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_node20_dependency_guard.py",
+    "/app/test_reports/iteration_6.json"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "95%"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Used exact Node binary path from one-time npx lookup (/root/.npm/_npx/.../node/bin/node), then executed installs outside wrapper env with npm_config_call/npm_config_package/YARN_IGNORE_ENGINES unset. With-lock and no-lock strict installs + builds passed. Optional wrapper command also passed after scramjet npm removal. Scramjet public assets returned HTTP 200 with expected content-types and sizes.",
+  "rca of the issue": "Previous blocker was package-manager enforcement from unused @mercuryworkshop/scramjet preinstall during strict clean install. After dependency removal, mandated Node20.19.2 install/build flow completes successfully while preserving vendored runtime assets and browser behavior."
+}
