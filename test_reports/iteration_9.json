@@ -1,0 +1,79 @@
+{
+  "summary": "Completed backend regression and live Web tab/bookmark/beforeunload validation on preview URL. Core tab management, bookmark flows, persistence, responsive layout, and native leave-warning behaviors are working. Live content origin still serves legacy protocol1 assets, so protocol2 lifecycle coverage remains deployment-blocked.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "https://content.desmos.lol/workspace/frame.mjs",
+        "issue": "Live content host still serves legacy shell (`send('ready')` without protocol2 requestId lifecycle safeguards). Repo has protocol2 code, but deployed asset is older."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Web workspace restore from malformed localStorage",
+        "issue": "Unsafe/duplicate tab payload restores as one blank-address tab but keeps malformed custom title (e.g., 'bad') instead of resetting to canonical blank tab title.",
+        "selector": "[role='tab'][data-testid^='browser-tab-']",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Protocol2 full-page engine rollout",
+        "issue": "Live content origin deployment mismatch prevents full verification of requestId/lifecycle-abort protocol2 behavior in production path.",
+        "affected_selectors": [
+          "[data-testid='proxy-frame-host']",
+          "[data-testid='browser-iframe']"
+        ]
+      },
+      {
+        "flow": "Internal link click inside proxied nested page",
+        "issue": "Could not reliably automate nested in-page link click in the isolated proxy iframe stack during this run; direct typed-navigation/history behavior was verified instead.",
+        "affected_selectors": [
+          "[data-testid='browser-iframe']",
+          "[data-testid='proxied-website-frame']"
+        ]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration9_browser_config_boundary.py",
+    "/app/backend/tests/test_core_endpoints.py",
+    "/app/test_reports/pytest/pytest_iteration10_backend.xml",
+    "/root/.emergent/automation_output/20260926_233805/console_20260926_233805.log",
+    "/root/.emergent/automation_output/20260926_233522/console_20260926_233522.log",
+    "/root/.emergent/automation_output/20260926_233400/console_20260926_233400.log"
+  ],
+  "action_items": [
+    "Deploy updated protocol2 assets to the live content host (at minimum /workspace/frame.mjs and /browse/sw.js) and retest lifecycle/requestId paths on preview.",
+    "Normalize malformed restored blank tabs to canonical title ('New tab') when URL sanitization clears unsafe values.",
+    "Optional: add deterministic iframe-level test hook for internal-link click validation in isolated proxy flow."
+  ],
+  "critical_code_review_comments": [
+    "readWorkspace() currently filters duplicate tab ids before URL sanitization, allowing first malformed duplicate to define restored tab title despite unsafe URL being stripped.",
+    "Live content host artifact drift is the main blocker for protocol2 production verification; app repo code and live shell are out of sync."
+  ],
+  "updated_files": [
+    "/app/test_reports/iteration_9.json"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "88%"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Verified on https://calc-unblocked.preview.emergentagent.com/web using live endpoints. Backend regression: 11/11 passed. Confirmed: tab create/switch/close behaviors (including active-adjacent close, background close unchanged, close-last creates blank), cap20 + recover, dropdown selection, ArrowLeft/ArrowRight/Home/End, independent per-tab address/history (typed navigation), bookmarks add/edit/remove/search/duplicate reject/invalid URL reject/cancel behavior, storage error banner on setItem failure, reload persistence, beforeunload dismiss + accept close with separate page, reload/external warning shown and dismiss keeps page, internal SPA route no warning, responsive 320/768/1024/1440 no horizontal overflow, data-testid duplicate scan clean. Notes route still loads after web workspace tests. Known/expected: heavy third-party console/runtime warnings from proxy stack and site compatibility; TikTok compatibility remains unresolved external behavior.",
+  "rca of the issue": "Primary unresolved blocker is deployment drift: local repo contains protocol2 (`requestId`, `send('ready', {protocol:2})`, navigation-failure payloads with URL filtering) but content.desmos.lol serves legacy protocol1 shell (`send('ready')` only). Additional minor restore inconsistency comes from duplicate-id filtering order in `readWorkspace`: malformed first duplicate tab survives title while URL is sanitized empty, producing a blank-address tab with stale malformed title.",
+  "main_agent_followup": {
+    "date": "2026-09-26",
+    "restore_issue": "FIXED and verified: unsafe/blank restored URL resets title to New tab, history=[], position=-1. Four Jest regression cases passed, web-workspace-unit.json.",
+    "protocol2_test": "Current local frame.mjs was delivered at content origin using test-only static asset interception. Real live Wisp and Example Domain loaded; protocol2 ready and matching loaded requestId verified. No upstream site responses/Wisp APIs mocked.",
+    "internal_link_test": "PASSED: clicked real Learn more inside proxied nested Example Domain; IANA loaded, active tab address and saved per-tab history updated. Log /root/.emergent/automation_output/20260926_234305/console_20260926_234305.log.",
+    "additional_fix": "Load-source validation uses shell-owned iframe.src instead of possibly virtualized document.URL. Active tab scrolls into view.",
+    "build": "Final production build compiled successfully; frame.mjs and sw.js syntax checks passed.",
+    "remaining": ["Actual Render/content-origin rollout of new assets and two environment values is still user action; updated service worker not live-tested on Render.", "TikTok still shows a third-party site/proxy compatibility error; direct new-tab option is available."]
+  }
+}

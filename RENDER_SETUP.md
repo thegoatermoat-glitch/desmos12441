@@ -21,7 +21,8 @@ OPENROUTER_URL=https://openrouter.ai/api/v1/chat/completions
 APP_ORIGIN=https://YOUR-SERVICE.onrender.com
 CORS_ORIGINS=https://YOUR-SERVICE.onrender.com
 HOST=0.0.0.0
-CONTENT_ORIGIN=
+CONTENT_ORIGIN=https://content.desmos.lol
+BROWSER_SHORTCUTS=[{"id":"tiktok","name":"TikTok","url":"https://www.tiktok.com/"},{"id":"youtube","name":"YouTube","url":"https://www.youtube.com/"}]
 SERVE_FRONTEND=true
 FRONTEND_BUILD_DIR=/app/frontend/build
 WISP_ENDPOINTS=wss://wisp-proxy.emergent.host/api/wisp,wss://wisp-proxy.emergent.host/api/wisp2
@@ -34,7 +35,8 @@ GAME_CACHE_MAX_BYTES=500000000
 
 - `MONGO_URL` and `DB_NAME` are **not required**. Existing values can remain; they are used only if you explicitly import earlier server-stored conversations.
 - `OPENROUTER_FALLBACK_MODEL` is no longer used. No paid model fallback exists.
-- Keep `CONTENT_ORIGIN` present and empty until configuring the isolated content hostname below.
+- `CONTENT_ORIGIN` now uses the user's confirmed HTTPS hostname, `https://content.desmos.lol`, enabling full-page Web browsing. For another domain, configure its own separate HTTPS content origin; if it is not ready, leave the value empty for script-free reader mode only.
+- Existing manually configured Render services must set **both** `CONTENT_ORIGIN` and `BROWSER_SHORTCUTS` from the block above. Updating repository code does not automatically update dashboard environment values. The Blueprint contains both settings for new/synced services.
 - Render supplies `PORT`. The Dockerfile sets the frontend's public `REACT_APP_BACKEND_URL=/`; do not override either with a preview value.
 - Keep the OpenRouter key private. Rotate any key previously shared in a message. Never put it in Git, frontend code, or DNS.
 
@@ -94,6 +96,16 @@ CONTENT_ORIGIN=https://content.desmos.lol
 4. Save/restart and test `desmos.lol`, `123.desmos.lol`, and `wwd.desmos.lol`. They share the same app, not separate service instances. Each hostname still has separate browser history. A one-level wildcard does not cover `a.b.desmos.lol`.
 
 Reserve `content.desmos.lol` for embedded third-party content, not the main Notes/calculator. Before the isolated hostname is configured, Web uses script-free reader mode. Some interactive/Unity titles need the isolated origin; individual third-party assets or runtimes can still have compatibility issues. No network-filter or universal site-access guarantee is made.
+
+### Web browsing and close-tab warning
+
+- After saving the environment settings and deploying the latest code, `/api/config` must show the nonempty content origin and TikTok/YouTube shortcuts. Web should show **Full-page browsing**, not **Reader view**.
+- Full pages use the existing Scramjet/Wisp browser on the separate content origin; no plain third-party iframe is used. Sites can still block proxies, require sign-in, or limit embedded features. Video playback is not guaranteed. **Open in new tab** opens the entered public URL directly when in-page browsing is restricted.
+- Deploy the latest frontend assets to the same service that serves `content.desmos.lol` so the shell and service worker are updated together. HTTPS alone does not enable interactive mode while `CONTENT_ORIGIN` remains blank.
+- The native close/reload warning is installed on the app shell. Test after clicking or typing inside the page, then close/reload the tab. The browser controls the wording and can suppress the warning before user interaction, in restricted embedded previews, or on mobile. Internal calculator/Library/Web/Notes navigation does not display a leave modal.
+- Web tabs and bookmarks are stored in this browser's localStorage under `calculator-web-workspace-v1`. Tabs keep separate address/history and stay mounted when switching. After reopening Web, saved addresses/history are restored, but only the active tab loads until others are selected. Closing the last tab creates a new blank tab; up to20 Web tabs can be open at once.
+- Bookmarks can be added from the address-bar star or Bookmarks manager, renamed, edited, removed, searched, and opened in the current or a new Web tab. These are app bookmarks, not the browser's native bookmark database. They do not sync across devices/hostnames or require a server database. Clearing site data removes them.
+- Current compatibility check: YouTube rendered its real page in the isolated browser; TikTok rendered its own error page with proxy/script compatibility errors. Use **Open in new tab** for sites that do not work inside Web. Do not interpret a connected transport as proof every site feature works.
 
 ## Troubleshooting
 

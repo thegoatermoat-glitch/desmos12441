@@ -1,0 +1,76 @@
+{
+  "summary": "Validated backend config/boundary plus live /web browsing and beforeunload behavior on preview. Config and Wisp checks pass; YouTube opens in-frame; TikTok connects but renders degraded error content; live content origin still serves legacy protocol1 shell (updated frame.mjs/sw.js not deployed).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "https://content.desmos.lol/workspace/frame.mjs",
+        "issue": "Live content origin still serves legacy shell (protocol1/no requestId handling), not the updated protocol2 artifact in repo."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Web proxied TikTok page",
+        "issue": "TikTok shortcut reaches connected state but in-frame content shows degraded error page ('Something went wrong') and heavy runtime exceptions.",
+        "selector": "[data-testid='browser-shortcut-tiktok']",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Full-page proxy browsing",
+        "issue": "Remote content shell deployment mismatch: production content.desmos.lol frame.mjs/sw.js are older than local updated assets, limiting expected protocol2 lifecycle/error behavior coverage.",
+        "affected_selectors": [
+          "[data-testid='proxy-frame-host']",
+          "[data-testid='browser-shortcut-tiktok']",
+          "[data-testid='browser-shortcut-youtube']"
+        ]
+      },
+      {
+        "flow": "Tab close warning accept-path automation",
+        "issue": "beforeunload dialog is reliably emitted on reload/external-nav/close after user activation; dismiss path verified. Accept-close outcome is inconclusive in automation harness (tool ended with page closed setup error after reporting false).",
+        "affected_selectors": [
+          "window beforeunload"
+        ]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration3_regressions.py",
+    "/app/backend/tests/test_iteration9_browser_config_boundary.py",
+    "/app/backend/tests/test_wisp_connectivity.py",
+    "/app/tests/firefox_web_probe.py",
+    "/app/test_reports/pytest/pytest_iteration9_backend.xml",
+    "/root/.emergent/automation_output/20260926_232049/console_20260926_232049.log",
+    "/root/.emergent/automation_output/20260926_232202/console_20260926_232202.log"
+  ],
+  "action_items": [
+    "Deploy updated /workspace/frame.mjs and /browse/sw.js to the service serving content.desmos.lol, then retest protocol2 requestId lifecycle/error paths.",
+    "Investigate Scramjet/TikTok runtime incompatibilities shown in console (read-only Symbol.toStringTag mutations, storage/JSON parse failures) and verify whether this is expected third-party anti-proxy behavior vs proxy regression.",
+    "Re-verify beforeunload accept-close behavior in a direct Playwright environment (Chromium + Firefox) outside current harness limitation.",
+    "If required product behavior is game index availability on content hostname, align middleware rule for /api/games (currently blocked) versus /api/games/{id}/content (allowed)."
+  ],
+  "critical_code_review_comments": [
+    "content_origin_boundary currently blocks /api/games index on content hostname due startswith('/api/games/') check not matching '/api/games'; verify intended policy.",
+    "Legacy shell at content.desmos.lol indicates rollout dependency risk: parent compatibility is present, but new protocol2 safeguards are not active until deployment.",
+    "Browser page behavior relies on status=connected from outer shell; actual target usability still depends on third-party script compatibility and should be surfaced as in-frame capability status where possible."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration3_regressions.py",
+    "/app/backend/tests/test_iteration9_browser_config_boundary.py",
+    "/app/tests/firefox_web_probe.py",
+    "/app/test_reports/iteration_8.json"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "75%"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Live preview /web shows Full-page browsing with TikTok/YouTube shortcuts and correct open-in-new-tab attrs (target=_blank, rel=noopener noreferrer). YouTube opens real in-frame page; TikTok opens proxied URL but degrades to 'Something went wrong' with extensive JS runtime warnings/errors in console. beforeunload dialog appears after activation on reload, external navigation, and close dismiss-path. Firefox automation was not executable via direct python due missing playwright package in this container.",
+  "rca of the issue": "Primary failure is environment rollout mismatch plus third-party proxy compatibility: repository has updated protocol2 shell/service-worker, but content.desmos.lol still serves protocol1 assets, so new lifecycle/error safeguards are not active live. TikTok degradation reproduces with connected transport and proxied target URL present, while console shows Scramjet rewrite/runtime incompatibility traces and site-script failures, indicating target/proxy execution constraints rather than app-shell shortcut/config routing bug."
+}

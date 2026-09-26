@@ -2,6 +2,11 @@
 self.importScripts('/scramjet/scramjet.all.js');
 const { ScramjetServiceWorker } = self.$scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker();
+async function reportNavigationFailure(event) {
+  if (event.request.mode !== 'navigate') return;
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  clients.forEach(client => client.postMessage({ type: 'proxy-navigation-error', url: event.request.url }));
+}
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', event => {
@@ -11,14 +16,12 @@ self.addEventListener('fetch', event => {
       await scramjet.loadConfig();
       const response = await scramjet.fetch(event);
       if (event.request.mode === 'navigate' && response.status >= 500) {
-        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-        clients.forEach(client => client.postMessage({ type: 'proxy-navigation-error' }));
+        await reportNavigationFailure(event);
       }
       return response;
     } catch {
-      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      clients.forEach(client => client.postMessage({ type: 'proxy-navigation-error' }));
-      return new Response('This website could not be reached.', { status: 502, headers: { 'Content-Type': 'text/plain' } });
+      await reportNavigationFailure(event);
+      return new Response('<!doctype html><title>Website unavailable</title><p data-proxy-error>This website could not be reached.</p>', { status: 502, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     }
   })());
 });

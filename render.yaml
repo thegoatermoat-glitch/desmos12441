@@ -22,7 +22,9 @@ services:
       - key: HOST
         value: 0.0.0.0
       - key: CONTENT_ORIGIN
-        value: ''
+        value: https://content.desmos.lol
+      - key: BROWSER_SHORTCUTS
+        value: '[{"id":"tiktok","name":"TikTok","url":"https://www.tiktok.com/"},{"id":"youtube","name":"YouTube","url":"https://www.youtube.com/"}]'
       - key: SERVE_FRONTEND
         value: 'true'
       - key: FRONTEND_BUILD_DIR

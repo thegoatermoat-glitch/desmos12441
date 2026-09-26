@@ -1,4 +1,5 @@
 import logging
+import json
 import os
 from pathlib import Path
 from urllib.parse import urlparse
@@ -38,6 +39,7 @@ async def root():
 async def public_config():
     return {'wisp_endpoints': os.environ['WISP_ENDPOINTS'].split(','),
             'content_origin': os.environ['CONTENT_ORIGIN'],
+            'browser_shortcuts': json.loads(os.environ['BROWSER_SHORTCUTS']),
             'game_source': os.environ['GAME_SOURCE_URL'],
             'history_storage': 'browser', 'free_models_only': True,
             'legacy_import_available': bool(os.environ.get('MONGO_URL') and os.environ.get('DB_NAME'))}

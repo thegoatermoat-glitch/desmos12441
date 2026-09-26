@@ -1,5 +1,11 @@
 import json
 from pathlib import Path
+import sys
+
+from fastapi.testclient import TestClient
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from server import app
 
 
 # Iteration-3 regressions: games covers metadata/files, reader-mode config, and CSP/sandbox headers.
@@ -33,13 +39,20 @@ class TestIteration3Regressions:
                 missing.append((game_id, rel))
         assert missing == []
 
-    def test_reader_mode_config_when_content_origin_blank(self, api_client, base_url):
-        response = api_client.get(f"{base_url}/api/config")
+    def test_reader_mode_config_when_content_origin_blank(self, monkeypatch):
+        monkeypatch.setenv("CONTENT_ORIGIN", "")
+        monkeypatch.setenv("WISP_ENDPOINTS", "wss://one.example,wss://two.example")
+        monkeypatch.setenv("BROWSER_SHORTCUTS", "[]")
+        monkeypatch.setenv("GAME_SOURCE_URL", "https://example.com/games")
+
+        client = TestClient(app)
+        response = client.get("/api/config")
+
         assert response.status_code == 200
         data = response.json()
         assert data["content_origin"] == ""
         assert isinstance(data["wisp_endpoints"], list)
-        assert len(data["wisp_endpoints"]) >= 2
+        assert data["wisp_endpoints"] == ["wss://one.example", "wss://two.example"]
 
     def test_game_content_csp_excludes_allow_same_origin_on_app_origin(self, api_client, base_url):
         response = api_client.get(f"{base_url}/api/games/2048.html/content")
