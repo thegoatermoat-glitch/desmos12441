@@ -4,12 +4,12 @@ A scientific calculator with a library, web workspace, and saved conversations. 
 
 ## Render deployment
 
-See **[RENDER_SETUP.md](RENDER_SETUP.md)** for the complete Render + MongoDB Atlas + Namecheap wildcard-domain guide.
+See **[RENDER_SETUP.md](RENDER_SETUP.md)** for the complete Render + Namecheap guide. **No database cluster is required.**
 
 - `Dockerfile`: builds React with Node 22; runs FastAPI on Python 3.11 as a non-root user.
-- `render.yaml`: creates one Docker web service; asks for the Atlas URI and server-side OpenRouter key.
+- `render.yaml`: creates one Docker web service; asks only for the server-side OpenRouter key.
 - `scripts/start-render.sh`: binds to Render's supplied `PORT` and configured `HOST`.
-- `/api/health`: checks the MongoDB connection.
+- `/api/health`: reports app health and browser-only storage without connecting to a database.
 - Production frontend uses same-origin `/api` calls, so the apex and wildcard hostnames work without separate frontend builds.
 
 ## Application
@@ -21,7 +21,11 @@ See **[RENDER_SETUP.md](RENDER_SETUP.md)** for the complete Render + MongoDB Atl
 | Web | `/web` | Scientific Calculator |
 | Notes | `/notes` | Desmos logo |
 
-Calculator history, display settings, starred titles, and the list of conversation IDs are saved in browser storage. Conversation messages are saved in MongoDB. Clearing browser storage loses the local conversation list. Each hostname has separate browser storage.
+Calculator history, display settings and starred titles stay in browser storage. Full conversation messages and failed-request drafts now stay in IndexedDB; the backend is stateless for all new conversations. No cluster or server-side history database is required. Clearing site data deletes this device's history; each hostname/browser is separate. Export notes for backups. An explicit read-only import can recover earlier conversations from an already configured original database, but normal startup/health/new messages never use it.
+
+Notes uses only currently listed free text models, with zero-price provider caps, disabled provider fallback, and server rejection of paid IDs. Provider availability/rate limits and model policies still apply. A lack of provider moderation is not a promise of unrestricted model responses. The API key remains server-side; message contents are sent to OpenRouter/the chosen provider for completion, not stored by this app's server.
+
+The loading screen adapts the supplied Desmos pulse/wordmark markup. It does not load the supplied external calculator API key, foreign SPA bundles, or Matomo analytics. The tab remains `Desmos | Testing`.
 
 Third-party titles are fetched on demand from the requested repository, not included as a multi-gigabyte download. The local content cache is disposable. Some titles need external resources or are not compatible with a restricted iframe. Embedded third-party content can contain its own wording; neutral shell labels do not modify original titles or conversations and do not guarantee passage through network filters.
 

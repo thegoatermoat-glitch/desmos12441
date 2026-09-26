@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { Header } from './components/Header';
 import { LeaveConfirmation } from './components/LeaveConfirmation';
+import { AppLoader } from './components/AppLoader';
 import './App.css';
 import './companion.css';
 
@@ -12,7 +13,7 @@ const Browser = lazy(() => import('./pages/Browser'));
 const Chat = lazy(() => import('./pages/Chat'));
 
 function Shell() {
-  return <><Header /><Suspense fallback={<div className="page-loading" data-testid="page-loading">Loading…</div>}><Outlet /></Suspense><LeaveConfirmation /><Toaster position="bottom-right" /></>;
+  return <><Header /><Suspense fallback={<AppLoader />}><Outlet /></Suspense><LeaveConfirmation /><Toaster position="bottom-right" /></>;
 }
 const router = createBrowserRouter([{ element: <Shell />, children: [
   { path: '/', element: <Calculator /> },

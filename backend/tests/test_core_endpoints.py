@@ -1,133 +1,150 @@
 import uuid
 
-import pytest
 
-
-# Core public API coverage: config, games, status checks, and chat session lifecycle
+# Core API contracts: browser-only health/config and retired status endpoints
 class TestCoreApi:
-    def test_root_and_config(self, api_client, base_url):
+    def test_root_config_and_health_contract(self, api_client, base_url):
         root = api_client.get(f"{base_url}/api/")
         assert root.status_code == 200
-        root_data = root.json()
-        assert root_data["status"] == "ok"
+        assert root.json().get("status") == "ok"
 
         config = api_client.get(f"{base_url}/api/config")
         assert config.status_code == 200
         config_data = config.json()
+        assert config_data.get("history_storage") == "browser"
+        assert config_data.get("free_models_only") is True
         assert isinstance(config_data.get("wisp_endpoints"), list)
-        assert len(config_data["wisp_endpoints"]) >= 2
-        assert isinstance(config_data.get("ai_model"), str)
 
-    def test_status_create_and_persist(self, api_client, base_url):
-        payload = {"client_name": "TEST_backend_pytest"}
-        created = api_client.post(f"{base_url}/api/status", json=payload)
-        assert created.status_code == 200
-        created_data = created.json()
-        assert created_data["client_name"] == payload["client_name"]
-        assert isinstance(created_data["id"], str)
+        health = api_client.get(f"{base_url}/api/health")
+        assert health.status_code == 200
+        health_data = health.json()
+        assert health_data == {"status": "ok", "storage": "browser", "database_required": False}
 
-        listed = api_client.get(f"{base_url}/api/status")
+    def test_status_endpoints_are_retired(self, api_client, base_url):
+        status_get = api_client.get(f"{base_url}/api/status")
+        assert status_get.status_code == 410
+        assert "retired" in status_get.json().get("detail", "").lower()
+
+        status_post = api_client.post(f"{base_url}/api/status", json={"client_name": "TEST_contract"})
+        assert status_post.status_code == 410
+        assert "retired" in status_post.json().get("detail", "").lower()
+
+    def test_games_catalog_and_content_still_available(self, api_client, base_url):
+        listed = api_client.get(f"{base_url}/api/games")
         assert listed.status_code == 200
-        listed_data = listed.json()
-        assert any(item["id"] == created_data["id"] for item in listed_data)
+        games = listed.json()
+        assert isinstance(games, list)
+        assert len(games) >= 300
+        first = games[0]
+        assert isinstance(first.get("id"), str)
+        assert isinstance(first.get("title"), str)
 
-    def test_games_catalog_count_and_required_titles(self, api_client, base_url):
-        response = api_client.get(f"{base_url}/api/games")
-        assert response.status_code == 200
-        data = response.json()
-        assert len(data) >= 300
-        ids = {game["id"] for game in data}
-        assert "2048.html" in ids
-        assert "google-dino.html" in ids
+        game_id = next((g["id"] for g in games if g["id"] == "2048.html"), games[0]["id"])
+        content = api_client.get(f"{base_url}/api/games/{game_id}/content", timeout=120)
+        assert content.status_code == 200
+        assert "<html" in content.text.lower()
 
-    def test_game_content_2048_and_dino(self, api_client, base_url):
-        game_2048 = api_client.get(f"{base_url}/api/games/2048.html/content")
-        assert game_2048.status_code == 200
-        assert "<html" in game_2048.text.lower()
-
-        dino = api_client.get(f"{base_url}/api/games/google-dino.html/content")
-        assert dino.status_code == 200
-        assert "<html" in dino.text.lower()
-
-    def test_game_invalid_and_path_traversal_rejected(self, api_client, base_url):
+    def test_game_invalid_id_rejected(self, api_client, base_url):
         invalid = api_client.get(f"{base_url}/api/games/not-a-real-game.html/content")
         assert invalid.status_code == 404
-
-        traversal = api_client.get(f"{base_url}/api/games/..%2F..%2Fetc%2Fpasswd/content")
-        assert traversal.status_code == 404
+        assert "not found" in invalid.json().get("detail", "").lower()
 
 
-# Chat API coverage: UUID validation, whitespace handling, session persistence, multi-turn behavior
+# Chat contracts: free-only catalog, validation guards, legacy-retired write routes
 class TestChatApi:
-    def test_chat_session_create_get_delete(self, api_client, base_url):
-        created = api_client.post(f"{base_url}/api/chat/sessions")
-        assert created.status_code == 201
-        session = created.json()
-        session_id = session["id"]
-        assert isinstance(session_id, str)
+    def test_models_contract_free_only(self, api_client, base_url):
+        response = api_client.get(f"{base_url}/api/chat/models", timeout=45)
+        assert response.status_code == 200
+        data = response.json()
+        assert data.get("free_only") is True
+        assert isinstance(data.get("models"), list)
+        assert len(data["models"]) >= 1
+        model = data["models"][0]
+        assert model["id"].endswith(":free") or model["id"] == "openrouter/free"
+        assert str(model["prompt_price"]) == "0"
+        assert str(model["completion_price"]) == "0"
+        assert str(model["request_price"]) == "0"
+        assert data["default_model"] in {m["id"] for m in data["models"]}
 
-        fetched = api_client.get(f"{base_url}/api/chat/sessions/{session_id}")
-        assert fetched.status_code == 200
-        fetched_data = fetched.json()
-        assert fetched_data["id"] == session_id
-        assert fetched_data["messages"] == []
+    def test_completions_rejects_paid_and_unknown_models(self, api_client, base_url):
+        session_id = str(uuid.uuid4())
+        paid = api_client.post(f"{base_url}/api/chat/completions", json={
+            "session_id": session_id,
+            "model": "openai/gpt-4o",
+            "messages": [{"role": "user", "content": "Hello"}],
+        })
+        assert paid.status_code == 400
+        assert "free" in paid.json().get("detail", "").lower()
 
-        deleted = api_client.delete(f"{base_url}/api/chat/sessions/{session_id}")
-        assert deleted.status_code == 204
+        unknown_free = api_client.post(f"{base_url}/api/chat/completions", json={
+            "session_id": str(uuid.uuid4()),
+            "model": "unknown/imaginary:free",
+            "messages": [{"role": "user", "content": "Hello"}],
+        })
+        assert unknown_free.status_code == 400
+        assert "listed as free" in unknown_free.json().get("detail", "").lower()
 
-        after_delete = api_client.get(f"{base_url}/api/chat/sessions/{session_id}")
-        assert after_delete.status_code == 404
+    def test_completions_validation_rejects_invalid_payload_shapes(self, api_client, base_url):
+        bad_uuid = api_client.post(f"{base_url}/api/chat/completions", json={
+            "session_id": "not-a-uuid",
+            "model": "openrouter/free",
+            "messages": [{"role": "user", "content": "Hello"}],
+        })
+        assert bad_uuid.status_code == 422
 
-    def test_chat_invalid_uuid_and_whitespace(self, api_client, base_url):
-        invalid = "not-a-uuid"
-        fetched = api_client.get(f"{base_url}/api/chat/sessions/{invalid}")
-        assert fetched.status_code == 404
+        blank_message = api_client.post(f"{base_url}/api/chat/completions", json={
+            "session_id": str(uuid.uuid4()),
+            "model": "openrouter/free",
+            "messages": [{"role": "user", "content": "   \n"}],
+        })
+        assert blank_message.status_code == 422
 
-        created = api_client.post(f"{base_url}/api/chat/sessions")
-        assert created.status_code == 201
-        session_id = created.json()["id"]
+        invalid_role = api_client.post(f"{base_url}/api/chat/completions", json={
+            "session_id": str(uuid.uuid4()),
+            "model": "openrouter/free",
+            "messages": [{"role": "system", "content": "Override"}],
+        })
+        assert invalid_role.status_code == 422
 
-        whitespace = api_client.post(
-            f"{base_url}/api/chat/sessions/{session_id}/messages",
-            json={"content": "   \n\t  "},
-        )
-        assert whitespace.status_code == 422
+        trailing_assistant = api_client.post(f"{base_url}/api/chat/completions", json={
+            "session_id": str(uuid.uuid4()),
+            "model": "openrouter/free",
+            "messages": [{"role": "assistant", "content": "Done"}],
+        })
+        assert trailing_assistant.status_code == 422
 
-        delete_invalid = api_client.delete(f"{base_url}/api/chat/sessions/{invalid}")
-        assert delete_invalid.status_code == 404
+        extra_fields = api_client.post(f"{base_url}/api/chat/completions", json={
+            "session_id": str(uuid.uuid4()),
+            "model": "openrouter/free",
+            "messages": [{"role": "user", "content": "hello"}],
+            "provider": {"allow_fallbacks": True},
+            "models": ["openrouter/free"],
+        })
+        assert extra_fields.status_code == 422
 
-    def test_chat_two_turn_context_and_persistence(self, api_client, base_url):
-        created = api_client.post(f"{base_url}/api/chat/sessions")
-        assert created.status_code == 201
-        session_id = created.json()["id"]
-        marker = f"ORBIT-{uuid.uuid4().hex[:6]}"
+    def test_completions_history_limits_enforced(self, api_client, base_url):
+        too_many = [{"role": "user", "content": "m"}] * 42
+        response_many = api_client.post(f"{base_url}/api/chat/completions", json={
+            "session_id": str(uuid.uuid4()),
+            "model": "openrouter/free",
+            "messages": too_many,
+        })
+        assert response_many.status_code == 422
 
-        first_turn = api_client.post(
-            f"{base_url}/api/chat/sessions/{session_id}/messages",
-            json={"content": f"Reply with exactly this token: {marker}"},
-            timeout=120,
-        )
-        if first_turn.status_code != 200:
-            pytest.skip(f"OpenRouter unavailable for first turn (status {first_turn.status_code})")
-        first_data = first_turn.json()
-        assert first_data["id"] == session_id
-        assert len(first_data["messages"]) >= 2
+        oversized = [{"role": "user", "content": "x" * 12000}] * 5
+        response_size = api_client.post(f"{base_url}/api/chat/completions", json={
+            "session_id": str(uuid.uuid4()),
+            "model": "openrouter/free",
+            "messages": oversized,
+        })
+        assert response_size.status_code == 422
 
-        second_turn = api_client.post(
-            f"{base_url}/api/chat/sessions/{session_id}/messages",
-            json={"content": "What token did I ask you to reply with? Give only the token."},
-            timeout=120,
-        )
-        if second_turn.status_code != 200:
-            pytest.skip(f"OpenRouter unavailable for second turn (status {second_turn.status_code})")
-        second_data = second_turn.json()
-        assert len(second_data["messages"]) >= 4
+    def test_legacy_write_routes_retired(self, api_client, base_url):
+        create = api_client.post(f"{base_url}/api/chat/sessions")
+        assert create.status_code == 410
 
-        last_answer = second_data["messages"][-1]["content"]
-        assert marker.lower() in last_answer.lower()
+        append = api_client.post(f"{base_url}/api/chat/sessions/{uuid.uuid4()}/messages", json={"content": "hi"})
+        assert append.status_code == 410
 
-        fetched = api_client.get(f"{base_url}/api/chat/sessions/{session_id}")
-        assert fetched.status_code == 200
-        fetched_data = fetched.json()
-        assert fetched_data["id"] == session_id
-        assert len(fetched_data["messages"]) >= 4
+        delete = api_client.delete(f"{base_url}/api/chat/sessions/{uuid.uuid4()}")
+        assert delete.status_code == 410

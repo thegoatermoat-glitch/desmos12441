@@ -1,112 +1,86 @@
-"""Server-side OpenRouter calls. Session IDs are private, unguessable capabilities."""
+"""Stateless OpenRouter requests. Full conversation history stays in the browser."""
 import os
-import uuid
-from datetime import datetime, timezone, timedelta
+from time import monotonic
 from typing import Literal
+from uuid import UUID
 
-import httpx
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
-from pymongo import ReturnDocument
-from database import db
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from free_models import FreeModel, default_model, free_model_ids_only, get_free_models
+from free_fallback import Attempt, MAX_ATTEMPTS, complete_free
 
 router = APIRouter(prefix='/api/chat')
 
 
 class Message(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     role: Literal['user', 'assistant']
+    content: str = Field(min_length=1, max_length=12000)
+
+    @field_validator('content')
+    @classmethod
+    def nonblank(cls, value):
+        if not value.strip():
+            raise ValueError('Write a message first.')
+        return value
+
+
+class ChatRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    session_id: UUID
+    model: str = Field(min_length=1, max_length=200)
+    messages: list[Message] = Field(min_length=1, max_length=41)
+
+    @model_validator(mode='after')
+    def validate_history(self):
+        if self.messages[-1].role != 'user':
+            raise ValueError('The last message must be from you.')
+        if sum(len(m.content) for m in self.messages) > 48000:
+            raise ValueError('This request is too long. Start a new conversation.')
+        return self
+
+
+class ChatReply(BaseModel):
+    session_id: str
+    requested_model: str
+    model: str
     content: str
+    used_model: str
+    attempts: list[Attempt]
+    fallback_used: bool
 
 
-class Session(BaseModel):
-    id: str
-    title: str
-    messages: list[Message] = Field(default_factory=list)
-    updated_at: str
+class ModelList(BaseModel):
+    models: list[FreeModel]
+    default_model: str
+    free_only: bool = True
+    max_attempts: int = MAX_ATTEMPTS
 
 
-class MessageInput(BaseModel):
-    content: str = Field(min_length=1, max_length=6000)
+@router.get('/models', response_model=ModelList)
+async def models():
+    items = await get_free_models()
+    return ModelList(models=items, default_model=default_model(items))
 
 
-def valid_id(value: str):
-    try:
-        return str(uuid.UUID(value))
-    except ValueError:
-        raise HTTPException(404, 'Conversation not found.')
-
-
-@router.post('/sessions', response_model=Session, status_code=201)
-async def create_session():
-    session = Session(id=str(uuid.uuid4()), title='New conversation',
-                      updated_at=datetime.now(timezone.utc).isoformat())
-    await db.chat_sessions.insert_one(session.model_dump())
-    return session
-
-
-@router.get('/sessions/{session_id}', response_model=Session)
-async def get_session(session_id: str):
-    doc = await db.chat_sessions.find_one({'id': valid_id(session_id)}, {'_id': 0})
-    if not doc:
-        raise HTTPException(404, 'Conversation not found.')
-    return Session(**doc)
-
-
-@router.delete('/sessions/{session_id}', status_code=204)
-async def delete_session(session_id: str):
-    await db.chat_sessions.delete_one({'id': valid_id(session_id)})
-
-
-@router.post('/sessions/{session_id}/messages', response_model=Session)
-async def send_message(session_id: str, body: MessageInput):
-    content = body.content.strip()
-    if not content:
-        raise HTTPException(422, 'Write a message first.')
-    session_id = valid_id(session_id)
-    now = datetime.now(timezone.utc)
-    doc = await db.chat_sessions.find_one_and_update(
-        {'id': session_id, '$or': [{'busy_until': {'$exists': False}},
-                                   {'busy_until': {'$lte': now.isoformat()}}]},
-        {'$set': {'busy_until': (now + timedelta(seconds=95)).isoformat()}},
-        projection={'_id': 0}, return_document=ReturnDocument.BEFORE)
-    if not doc:
-        existing = await db.chat_sessions.find_one({'id': session_id}, {'_id': 0, 'id': 1})
-        raise HTTPException(409 if existing else 404,
-                            'A response is already on its way.' if existing else 'Conversation not found.')
-    try:
-        history = doc.get('messages', [])[-38:]
-        pending = history + [{'role': 'user', 'content': content}]
-        prompt = [{'role': 'system', 'content': (
-            'You are a helpful AI assistant in an independent scientific calculator companion. '
-            'Be clear, accurate, concise and friendly. Use Markdown and LaTeX for mathematics. '
-            'You are not an official Desmos service. Never claim you can see the calculator '
-            'or browser unless the user provides its contents.')}]
-        async with httpx.AsyncClient(timeout=httpx.Timeout(80, connect=15)) as http:
-            response = await http.post(os.environ['OPENROUTER_URL'],
-                headers={'Authorization': 'Bearer ' + os.environ['OPENROUTER_API_KEY'],
-                         'HTTP-Referer': os.environ['APP_ORIGIN'],
-                         'X-Title': 'Scientific Calculator Companion'},
-                json={'model': os.environ['OPENROUTER_MODEL'],
-                      'models': [os.environ['OPENROUTER_MODEL'], os.environ['OPENROUTER_FALLBACK_MODEL']],
-                      'messages': prompt + pending,
-                      'max_tokens': 1200, 'temperature': 0.4})
-        if response.status_code != 200:
-            messages = {401: 'The service key was rejected. Update the server configuration.',
-                        402: 'The service account has insufficient credits.',
-                        429: 'The service is busy or its request limit is reached. Please try again shortly.'}
-            raise HTTPException(503, messages.get(response.status_code,
-                                'The service is unavailable. Please try again.'))
-        answer = response.json()['choices'][0]['message']['content']
-        if not isinstance(answer, str) or not answer.strip():
-            raise HTTPException(502, 'No response was returned. Please retry.')
-        session = Session(id=session_id, title=content[:64] if not history else doc['title'],
-                          messages=pending + [{'role': 'assistant', 'content': answer}],
-                          updated_at=datetime.now(timezone.utc).isoformat())
-        await db.chat_sessions.update_one({'id': session_id}, {'$set': session.model_dump()})
-        return session
-    except httpx.TimeoutException:
-        raise HTTPException(504, 'The response timed out. Your message was not saved; please retry.')
-    except (httpx.HTTPError, KeyError, IndexError, ValueError):
-        raise HTTPException(502, 'Could not get a response. Please try again.')
-    finally:
-        await db.chat_sessions.update_one({'id': session_id}, {'$unset': {'busy_until': ''}})
+@router.post('/completions', response_model=ChatReply)
+async def complete(body: ChatRequest):
+    started = monotonic()
+    if not free_model_ids_only(body.model):
+        raise HTTPException(400, 'Only free models are allowed. Paid fallback is disabled.')
+    available = await get_free_models()
+    if not any(m.id == body.model for m in available):
+        raise HTTPException(400, 'This model is not currently listed as free. Choose another model.')
+    if not os.environ.get('OPENROUTER_API_KEY'):
+        raise HTTPException(503, 'The service key has not been configured.')
+    system = {'role': 'system', 'content': (
+        'You are a helpful assistant in an independent scientific calculator companion. '
+        'Be accurate, direct and concise. Use Markdown and LaTeX for math. '
+        'You are not an official Desmos service. You cannot see other pages unless their '
+        'contents are included in this conversation.')}
+    result = await complete_free(os.environ['OPENROUTER_URL'], {
+        'Authorization': 'Bearer ' + os.environ['OPENROUTER_API_KEY'],
+        'HTTP-Referer': os.environ['APP_ORIGIN'], 'X-Title': 'Scientific Calculator Companion',
+        'X-Session-ID': str(body.session_id),
+    }, [system] + [m.model_dump() for m in body.messages], body.model, available, started)
+    return ChatReply(session_id=str(body.session_id), requested_model=body.model, **result)

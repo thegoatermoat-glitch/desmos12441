@@ -1,0 +1,25 @@
+@keyframes dcg-loading-pulse {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 0; transform: scale(1.5, 1.5); }
+  100% { opacity: 0; transform: scale(1.5, 1.5); }
+}
+.dcg-loading-div-container {
+  position: fixed; inset: 0; background: #fff; z-index: 1000;
+}
+.dcg-loading-background-div {
+  animation: dcg-loading-pulse 2.2s infinite;
+  background: #eee; width: 140px; height: 140px; display: inline-block;
+  position: absolute; top: 50%; left: 50%; margin-left: -70px;
+  margin-top: -70px; border-radius: 50%; pointer-events: none;
+}
+.dcg-loading-div {
+  font-size: 18px; width: 140px; height: 140px; display: inline-block;
+  text-align: center; position: absolute; top: 50%; left: 50%; color: transparent;
+  margin-left: -70px; margin-top: -70px; border-radius: 50%;
+  background: url('/assets/desmos-logo.png') no-repeat center center;
+  background-size: 120px 25px; filter: grayscale(1) brightness(.6);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dcg-loading-background-div { animation: none; opacity: .4; }
+}

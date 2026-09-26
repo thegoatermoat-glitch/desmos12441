@@ -25,12 +25,13 @@
         Learn how to configure a non-root public URL by running `npm run build`.
         -->
         <title>Desmos | Testing</title>
+        <link rel="stylesheet" href="%PUBLIC_URL%/loader.css" />
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
     </head>
     <body>
-        <noscript>You need to enable JavaScript to run this app.</noscript>
-        <div id="root"></div>
+        <noscript><style>.dcg-loading-div-container{display:none}</style>You need to enable JavaScript to run this app.</noscript>
+        <div id="root"><div class="dcg-loading-div-container" role="status" aria-label="Loading calculator" data-testid="boot-loading-screen"><div class="dcg-loading-background-div" aria-hidden="true"></div><div class="dcg-loading-div" data-testid="boot-loading-logo">Loading…</div></div></div>
         <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
@@ -105,6 +106,8 @@
             })(document, window.posthog || []);
             posthog.init("phc_DbsPb39SRc8z3EiQ6Dhj6ikv4H4rTKcht9d4sZSesceP", {
                 api_host: "https://ap.emergent.sh",
+                disable_session_recording: true,
+                autocapture: false,
                 person_profiles: "identified_only", // or 'always' to create profiles for anonymous users as well,
                 session_recording: {
                     recordCrossOriginIframes: true,

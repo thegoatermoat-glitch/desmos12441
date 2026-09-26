@@ -1,0 +1,57 @@
+{
+  "summary": "Completed backend+frontend validation for free-model fallback scope. Updated stale unit contracts to current helper boundaries, added deterministic fallback/catalogue test suite, verified live preview chat fallback/persistence, responsive behavior, production build, and health/core smoke without DB dependency.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Calculator keypad",
+        "issue": "Core calculator keys (notably operator/enter) do not expose stable data-testid/accessible names, causing brittle automation selectors.",
+        "selector": "button:has-text('+'), button:has-text('↵')",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_chat_live_and_unit_contracts.py",
+    "/app/backend/tests/test_free_fallback_and_catalogue.py",
+    "/app/backend/tests/test_core_endpoints.py",
+    "/app/test_reports/pytest/pytest_iteration8_chat_contracts.xml",
+    "/app/test_reports/pytest/pytest_iteration8_backend_fallback.xml",
+    "/app/test_reports/pytest/pytest_iteration8_full_scope.xml"
+  ],
+  "action_items": [
+    "Optional testability hardening: add stable data-testid/ARIA labels to calculator operator and enter controls.",
+    "No fallback/backend functional blocker detected in this iteration."
+  ],
+  "critical_code_review_comments": [
+    "Fallback engine now test-covered for 5-attempt cap, stop/retry policy matrix, Retry-After handling, and strict zero-cost provider caps on every attempt.",
+    "Catalogue parser is validated against duplicate IDs, optional request pricing omission, modality filters, and rejection of nonzero/malformed pricing.",
+    "Live preview confirms browser-only storage contract (`database_required:false`) and successful real free-model multi-turn continuity with session isolation."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_chat_live_and_unit_contracts.py",
+    "/app/backend/tests/test_free_fallback_and_catalogue.py",
+    "/app/test_reports/iteration_7.json"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "95%"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Deterministic fallback/exhaustion/model-alias UI checks were executed with explicit Playwright route fixtures (not production behavior) plus separate real preview calls. Live run observed fallback switch from selected model to inclusionai/ling-3.0-flash-fin:free with attempts rendered and IndexedDB persistence across reload.",
+  "rca of the issue": "Primary defect during this run was stale unit-contract wiring: tests patched `chat.httpx` and expected obsolete `max_completion_tokens`. Current implementation moved HTTP calls into `free_fallback.complete_free` and uses `max_tokens`. Updating tests to patch `free_fallback.httpx` and assert current payload contract resolved failures.",
+  "main_agent_verification": {
+    "date": "2026-09-26",
+    "remaining_issues": [],
+    "calculator_finding_resolution": "FALSE POSITIVE: Keypad.jsx already supplies stable calc-key-plus/divide/multiply/minus/enter data-testid values. Operators have aria-label; Enter has title=Enter. Browser self-test verified each unique control and completed 2+3=5 via these existing selectors. No calculator source changes needed.",
+    "test_evidence": "pytest_iteration8_full_scope.xml: 27 tests, zero failures/errors/skips. Real fallback curl: qwen429 then inclusionai200 READY. UI fifth-success/exhaustion/alias cases used explicit mocked test fixtures only, not production mocks.",
+    "deployment_limit": "Render instructions updated; actual Render rollout/DNS/Docker runtime not executed here."
+  }
+}

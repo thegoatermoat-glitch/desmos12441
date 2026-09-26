@@ -10,9 +10,9 @@ Recreate https://www.desmos.com/testing/kentucky/scientific one-to-one. Clicking
 - The actual reference is a green 50px header, white page, centered 540x440 scientific calculator with gray keypad and blue enter button. Live reference takes precedence over inaccurate colors in generated design guidelines.
 
 ## Architecture
-- React 19 / CRA / React Router, FastAPI, MongoDB via existing MONGO_URL and DB_NAME.
+- React 19 / CRA / React Router and stateless FastAPI. Normal usage requires NO database. Full conversations and failed-message drafts live in browser IndexedDB; localStorage holds UI preferences/pointers. Optional explicit legacy import is read-only and never runs during normal startup or chat.
 - MathLive math input and Cortex Compute Engine, not arbitrary JavaScript evaluation.
-- OpenRouter via server-side httpx; multi-turn anonymous UUID sessions in MongoDB.
+- OpenRouter via server-side httpx; client-generated UUID sessions and client-supplied bounded multi-turn history. Live free-model catalogue; up to five distinct free model attempts, strict zero-price caps, no paid fallback. Actual responder and retry metadata are displayed and saved locally.
 - Allowlisted GitHub game catalogue, lazy fetch/cache, sandboxed game player.
 - Scramjet 1.1.0 / bare-mux 2.1.9 / Epoxy 3.0.1 for Wisp browser; service worker and honest failover/error states.
 - Native beforeunload warning only. Latest user request explicitly removes all internal leave modals and their buttons.
@@ -35,9 +35,9 @@ Recreate https://www.desmos.com/testing/kentucky/scientific one-to-one. Clicking
 - Actual Render/Atlas/DNS account setup has not been performed. Docker CLI is not available in the workspace; production build/static hosting/configuration will be validated separately.
 
 ## Priority / next tasks
-- P0: Native Node20.19.2 build failure RESOLVED and independently verified (iteration6). No remaining blocker identified for the reported build failure.
-- P1: User retries native Emergent deployment; validate the real production rollout and platform-managed Atlas connection. Earlier Render setup instructions remain only for users choosing that separate target.
-- P2: Isolated browsing origin for broader interactive site support; broader third-party title compatibility verification; optional conversation export.
+- P0: Five-free-model fallback completed and verified (2026-09-26; iteration_7 report, iteration8-named XML artifacts). No known blocker in the requested scope. Preserve verified Node20 dependency pins.
+- P1: User requested Render instructions; RENDER_SETUP.md is current and database-free. User must save latest code and perform/verify their Render rollout; no account, DNS/TLS, or live Docker runtime provisioned here.
+- P2: Loader explicitly skipped for this continuation; do not change it. Isolated browsing-origin/Unity compatibility remains dependent on user's DNS/TLS. Optional enhancement: import previously exported browser notes.
 
 ## 2026-09-26 continuation
 - Render reported missing `/frontend/yarn.lock` during Docker COPY although Root Directory/build context were correct. Workspace lockfile exists but Render checkout did not contain it. Updated Dockerfile to copy frontend directory once and conditionally use frozen install when lockfile exists, otherwise generate it from package.json.
@@ -77,3 +77,28 @@ Recreate https://www.desmos.com/testing/kentucky/scientific one-to-one. Clicking
 - Independentregressions:14/14pytestdependency/coreAPItests pass; calculatorarithmetic,ans,DEG/RADtrig,sqrt,fractions pass; NotesKaTeX/responsive/20fontchecks passiniteration5. VendoredScramjetJS/WASMreturn200withcorrectMIMEtypes. No APIsmocked.
 - Finaldeployment_agentrecheckreturnedPASS/nofindings. Actualproductionrollout has NOTbeenstarted orclaimedverifiedhere. Usernextaction: retry native Emergent deployment. Existing isolated-host/Unity limitations areunchangedandoutside thisdependencyfix.
 - Futuremaintenanceenhancement: automateexact-runtimeclean-install/build compatibilitytests on eachdependencyupdate. ExistingnonfatalYarnpeer/resolutionwarningscanbecleaned separately withoutremovingplatformsecurityresolutions.
+
+## Latest request — browser-only notes, free-only model choices, loading screen
+- User approved browser-only full conversation history (no paid cluster), less-restrictive OpenRouter options from current catalogue, **free models only with no paid fallback**.
+- User supplied full Desmos loader HTML. Only its pulse/wordmark visual is adapted with the supplied local Desmos logo; foreign calculator API key, proprietary SPA script links, and analytics are intentionally not imported. Title/favicon/calculator design unchanged.
+- Live public model catalogue checked directly: free Qwen/Gemma/Nemotron/etc options exist; Dolphin/Hermes are NOT currently listed as free despite stale playbook examples. UI reports actual provider-moderation metadata, not a guarantee of unrestricted replies.
+- Backend rewritten stateless POST/api/chat/completions with UUID session_id and bounded prior messages. GET/api/chat/models returns live free-text allowlist. Providermax_price prompt/completion/request=0, allow_fallbacks=false, require_parameters=true; no models fallback array. Paid IDs rejectedserver-side. Existing paidfallbackenvkey leftblank/unused; preferredmodelqwen/qwen3.8-27b:free.
+- Startup and/api/health no longer create/query MongoDB. database.py removed. Protected MONGO_URL/DB_NAME environment keys preserved untouched but not required. Optional explicit read-only legacy import lazily connects only when the user asks to recover an old session; original records are not deleted. Obsolete writable session/status APIs return410.
+- Frontend idb8.0.3 installed underNode20.19.2. Full conversations/drafts in IndexedDB; browser-local deletion, exportbackup, session switching, and free-model selector. Native browser leave warning retained; no internal leave dialogs.
+- Boot/lazy-page loader uses public/loader.css plusAppLoader, matching supplied140px pulse and120x25wordmark. No new external analytics; existing session recording/autocapture disabled to protect local transcript display.
+- RenderBlueprint/startscript no longer request or require MongoDB/DB_NAME. Dockerfile unchanged. RENDER_SETUP.md rewritten without cluster steps; READMEupdated. Newhealthresponse {status:ok,storage:browser,database_required:false}.
+- Historical pending checks above are superseded for the fallback scope by the verified continuation below. Loader remains outside the latest approved scope. No production integration is mocked.
+
+## 2026-09-26 — five-free-model fallback continuation (VERIFIED)
+- Latest explicit user choice: “Focus only on completing and testing the AI fallback.; also send render instructions”. “Skip the loader for now.” No new integrations or database changes requested.
+- Completed backend helper `/backend/free_fallback.py`: selected model first, at most five DISTINCT currently free candidates; retry model-specific429,408,500,502/503/504, unavailable404, network/timeout and empty replies; stop auth/account/billing/policy/shared-quota failures. Invalid/non-finite Retry-After cannot cause a crash. Full request context/session header stays unchanged across attempts.
+- Limits: 55 seconds overall (including catalogue lookup),12 seconds per attempt, respecting Retry-After; fewer than five attempts can run when budget/quota/wait limits require. Failure is sanitized with attempts and paid_fallback:false; no guarantee of free provider availability.
+- Free catalogue preserves explicit zero prices and deduplicates. OpenRouter currently omits optional request pricing on free variants: absent is accepted only with explicit zero prompt/completion; present nonzero/null is rejected. Provider caps for prompt/completion/request remain0, allow_fallbacks:false, require_parameters:true. No upstream models-array or paid base-slug retry.
+- Response has requested_model, actual provider-reported model, used_model (verified-free routing ID), attempts and fallback_used. Frontend switches next selection using used_model, not the potentially differently named provider-reported slug.
+- Added `/frontend/src/components/chat/ModelAttempts.jsx`; success and error attempt details, actual “Answered by” name, and switched-free-model indicator. Metadata is stored with the assistant message in IndexedDB and included in export. Failed sends keep the draft; retries do not duplicate the user message.
+- Updated RENDER_SETUP.md: no database required, five-model logic, stop conditions/time limits, troubleshooting and privacy. Docker/Render configs and protected environment keys unchanged in this continuation. No loader changes.
+- Live curl observed requested qwen/qwen3.8-27b:free →429 → inclusionai/ling-3.0-flash-fin:free →200 READY; fallback_used:true. Testing agent verified real multi-turn marker retention, isolated sessions, browser reload persistence and responsive layouts320/768/1024/1440; production yarn build passed.
+- 27/27 backend tests passed: `/test_reports/pytest/pytest_iteration8_full_scope.xml`. Report `/test_reports/iteration_7.json`. Fifth-attempt success/exhaustion/model-alias UI cases used explicit MOCKED test fixtures; real runtime integration is NOT mocked.
+- Agent's only low-priority finding (calculator operator/Enter missing test IDs/names) was a false positive: existing calc-key-plus/divide/multiply/minus/enter selectors and aria-label/title verified in browser;2+3=5passed. Calculator code left unchanged; report has main-agent resolution.
+- Test files changed by testing agent: `/backend/tests/test_free_fallback_and_catalogue.py` (new), `/backend/tests/test_chat_live_and_unit_contracts.py` (updated obsolete helper/payload contracts). No production code changes by tester. No auth credentials created/modified; existing key stays only in backend environment.
+- Next: user deploys latest repository code to Render and checks /api/health plus a Notes conversation. No remaining P0 fallback defects; actual Render rollout is unverified. Future: optional notes-backup import and isolated content-host testing, not part of this work.

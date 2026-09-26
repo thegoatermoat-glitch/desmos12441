@@ -7,10 +7,6 @@ services:
     dockerContext: .
     healthCheckPath: /api/health
     envVars:
-      - key: MONGO_URL
-        sync: false
-      - key: DB_NAME
-        value: desmos_testing
       - key: OPENROUTER_API_KEY
         sync: false
       - key: APP_ORIGIN
@@ -32,9 +28,7 @@ services:
       - key: FRONTEND_BUILD_DIR
         value: /app/frontend/build
       - key: OPENROUTER_MODEL
-        value: google/gemini-2.5-flash-lite
-      - key: OPENROUTER_FALLBACK_MODEL
-        value: openai/gpt-4o-mini
+        value: qwen/qwen3.8-27b:free
       - key: OPENROUTER_URL
         value: https://openrouter.ai/api/v1/chat/completions
       - key: WISP_ENDPOINTS

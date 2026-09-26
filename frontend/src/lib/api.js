@@ -8,7 +8,10 @@ export async function api(path, options = {}) {
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(typeof body.detail === 'string' ? body.detail : 'Something went wrong. Please try again.');
+    const error = new Error(typeof body.detail === 'string' ? body.detail : body.detail?.message || 'Something went wrong. Please try again.');
+    error.attempts = body.detail?.attempts || [];
+    error.status = response.status;
+    throw error;
   }
   return response.status === 204 ? null : response.json();
 }
