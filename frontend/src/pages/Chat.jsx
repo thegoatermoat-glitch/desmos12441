@@ -7,6 +7,7 @@ import { ModelPicker } from '../components/chat/ModelPicker';
 import { ModelAttempts } from '../components/chat/ModelAttempts';
 import { downloadConversations } from '../lib/chatHistory';
 import { useLocalChat } from '../hooks/useLocalChat';
+import { formatCost } from '../lib/chatCosts';
 
 export default function Chat() {
   const chat = useLocalChat();
@@ -27,17 +28,18 @@ export default function Chat() {
         {chat.loading ? <div className="stage-message" data-testid="conversation-loading"><Loader2 className="spin" />Opening notes…</div>
           : chat.current?.messages?.length ? <div className="messages">{chat.current.messages.map((m, index) => <ChatMessage message={m} index={index} key={index} />)}</div>
           : <div className="chat-empty" data-testid="chat-empty"><h1 data-testid="notes-heading">Notes</h1><p>What would you like to work on?</p></div>}
-        {chat.busy && <div className="pending-message" data-testid="chat-thinking"><div className="pending-user">{chat.input}</div><span role="status" aria-label="Waiting for a free response" data-testid="chat-pending-status"><i /><i /><i /></span></div>}<div ref={bottom} />
+        {chat.busy && <div className="pending-message" data-testid="chat-thinking"><div className="pending-user">{chat.input}</div><span role="status" aria-label="Waiting for a response" data-testid="chat-pending-status"><i /><i /><i /></span></div>}<div ref={bottom} />
       </div>
       <div className="composer-area">
         {(chat.error || chat.storageError || chat.modelError) && <div className="error-banner" role="alert" data-testid="chat-error">{chat.storageError || chat.error || chat.modelError}</div>}
         {chat.error && <ModelAttempts attempts={chat.lastAttempts} testId="chat-failed-attempts" />}
         <form className="chat-composer" onSubmit={send}><textarea ref={textbox} data-testid="chat-input" aria-label="Write a message" value={chat.input} maxLength={6000} disabled={disabled}
           onChange={event => chat.setInput(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder="Write a message…" rows={2} />
-          <div className="composer-bottom"><span data-testid="chat-cost-notice">Up to 5 free models · No paid fallback</span>
+          <div className="composer-bottom"><span data-testid="chat-cost-notice">{chat.policy ? `Free first · Cheapest paid fallback · ${formatCost(chat.policy.estimated_budget_usd)} estimated limit` : 'Loading cost policy…'}</span>
             <button type="submit" title="Send message" aria-label="Send message" data-testid="chat-send" disabled={!chat.input.trim() || disabled || !chat.models.some(m => m.id === chat.model)}>{chat.busy ? <Loader2 className="spin" size={18} /> : <ArrowUp size={20} />}</button>
           </div>
-        </form><p className="chat-disclaimer" data-testid="chat-disclaimer">History stays on this device; requests go to OpenRouter and its providers. Check important answers.</p>
+        </form><p className="chat-budget-policy" data-testid="chat-budget-policy">One paid attempt maximum. Estimates are not billing caps; OpenRouter key limits still apply.</p>
+        <p className="chat-disclaimer" data-testid="chat-disclaimer">History stays on this device; requests go to OpenRouter and its providers. Check important answers.</p>
       </div>
     </section>
   </div></main>;

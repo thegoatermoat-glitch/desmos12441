@@ -12,7 +12,9 @@ class TestCoreApi:
         assert config.status_code == 200
         config_data = config.json()
         assert config_data.get("history_storage") == "browser"
-        assert config_data.get("free_models_only") is True
+        assert config_data.get("free_models_only") is False
+        assert config_data.get("unmoderated_models_only") is True
+        assert config_data.get("paid_fallback") is True
         assert isinstance(config_data.get("wisp_endpoints"), list)
 
         health = api_client.get(f"{base_url}/api/health")
@@ -50,20 +52,21 @@ class TestCoreApi:
         assert "not found" in invalid.json().get("detail", "").lower()
 
 
-# Chat contracts: free-only catalog, validation guards, legacy-retired write routes
+# Chat contracts: unmoderated catalog, validation guards, legacy-retired write routes
 class TestChatApi:
-    def test_models_contract_free_only(self, api_client, base_url):
+    def test_models_contract_unmoderated_with_paid_fallback(self, api_client, base_url):
         response = api_client.get(f"{base_url}/api/chat/models", timeout=45)
         assert response.status_code == 200
         data = response.json()
-        assert data.get("free_only") is True
+        assert data.get("free_only") is False
+        assert data.get("unmoderated_only") is True
+        assert data.get("paid_fallback") is True
+        assert data.get("max_paid_attempts") == 1
         assert isinstance(data.get("models"), list)
         assert len(data["models"]) >= 1
         model = data["models"][0]
-        assert model["id"].endswith(":free") or model["id"] == "openrouter/free"
-        assert str(model["prompt_price"]) == "0"
-        assert str(model["completion_price"]) == "0"
-        assert str(model["request_price"]) == "0"
+        assert model["is_moderated"] is False
+        assert not model["id"].startswith("openrouter/")
         assert data["default_model"] in {m["id"] for m in data["models"]}
 
     def test_completions_rejects_paid_and_unknown_models(self, api_client, base_url):
@@ -74,7 +77,7 @@ class TestChatApi:
             "messages": [{"role": "user", "content": "Hello"}],
         })
         assert paid.status_code == 400
-        assert "free" in paid.json().get("detail", "").lower()
+        assert "eligible" in paid.json().get("detail", "").lower()
 
         unknown_free = api_client.post(f"{base_url}/api/chat/completions", json={
             "session_id": str(uuid.uuid4()),
@@ -82,7 +85,7 @@ class TestChatApi:
             "messages": [{"role": "user", "content": "Hello"}],
         })
         assert unknown_free.status_code == 400
-        assert "listed as free" in unknown_free.json().get("detail", "").lower()
+        assert "eligible" in unknown_free.json().get("detail", "").lower()
 
     def test_completions_validation_rejects_invalid_payload_shapes(self, api_client, base_url):
         bad_uuid = api_client.post(f"{base_url}/api/chat/completions", json={

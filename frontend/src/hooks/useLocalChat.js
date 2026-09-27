@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, readStorage, writeStorage } from '../lib/api';
 import { deleteConversation, getConversation, listConversations, newConversation, requestMessages, saveConversation } from '../lib/chatHistory';
+import { selectableModels } from '../lib/chatCosts';
 
 export const useLocalChat = () => {
   const [sessions, setSessions] = useState([]), [current, setCurrent] = useState(null), [input, setInput] = useState('');
   const [models, setModels] = useState([]), [model, setModel] = useState('');
+  const [policy, setPolicy] = useState(null);
   const [busy, setBusy] = useState(false), [loading, setLoading] = useState(true);
   const [error, setError] = useState(''), [storageError, setStorageError] = useState(''), [modelError, setModelError] = useState('');
   const [legacy, setLegacy] = useState(() => readStorage('chat-sessions', []));
@@ -24,9 +26,15 @@ export const useLocalChat = () => {
       const result = await api('/chat/models');
       if (!mounted.current) return;
       setModels(result.models);
+      setPolicy(result);
       setModel(previous => result.models.some(m => m.id === previous) ? previous : result.default_model);
     } catch (failure) { if (mounted.current) setModelError(failure.message); }
   }, []);
+  useEffect(() => {
+    if (!models.length || !policy) return;
+    const choices = selectableModels(models);
+    if (!choices.some(item => item.id === model)) setModel(choices.some(item => item.id === policy.default_model) ? policy.default_model : choices[0]?.id || '');
+  }, [models, model, policy]);
   useEffect(() => {
     mounted.current = true;
     refresh().then(values => {
@@ -79,11 +87,13 @@ export const useLocalChat = () => {
       }) });
       const latest = await getConversation(draft.id);
       if (!latest || latest.pending_id !== requestId) return;
-      const completed = { ...draft, model: answer.used_model, pending_id: null, draft: '', updated_at: new Date().toISOString(), messages: [...draft.messages,
+      const nextModel = answer.next_model || answer.used_model;
+      const completed = { ...draft, model: nextModel, pending_id: null, draft: '', updated_at: new Date().toISOString(), messages: [...draft.messages,
         { role: 'user', content }, { role: 'assistant', content: answer.content, model: answer.model,
           requested_model: answer.requested_model, used_model: answer.used_model,
+          is_paid: answer.is_paid, estimated_cost_usd: answer.estimated_cost_usd, actual_cost_usd: answer.actual_cost_usd, budget_usd: answer.budget_usd,
           fallback_used: answer.fallback_used, attempts: answer.attempts }] };
-      if (mounted.current) { setCurrent(completed); setInput(''); setModel(answer.used_model); setLastAttempts(answer.attempts); }
+      if (mounted.current) { setCurrent(completed); setInput(''); setModel(nextModel); setLastAttempts(answer.attempts); }
       await saveConversation(completed); await refresh();
     } catch (failure) {
       if (mounted.current) {
@@ -107,6 +117,6 @@ export const useLocalChat = () => {
     writeStorage('chat-sessions', remaining); setLegacy(remaining); await refresh(); setImporting(false);
     if (remaining.length) setError('Some older notes could not be imported. Their original server records were not changed.');
   };
-  return { sessions, current, input, setInput, models, model, setModel, busy, loading, error,
+  return { sessions, current, input, setInput, models, model, setModel, policy, busy, loading, error,
     storageError, modelError, loadModels, open, fresh, remove, send, legacy, importing, importEarlier, lastAttempts };
 };

@@ -31,6 +31,10 @@ services:
         value: /app/frontend/build
       - key: OPENROUTER_MODEL
         value: qwen/qwen3.8-27b:free
+      - key: OPENROUTER_REQUEST_BUDGET_USD
+        value: '0.01'
+      - key: OPENROUTER_MAX_OUTPUT_TOKENS
+        value: '1024'
       - key: OPENROUTER_URL
         value: https://openrouter.ai/api/v1/chat/completions
       - key: WISP_ENDPOINTS

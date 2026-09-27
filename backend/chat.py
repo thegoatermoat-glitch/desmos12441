@@ -6,8 +6,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-from free_models import FreeModel, default_model, free_model_ids_only, get_free_models
-from free_fallback import Attempt, MAX_ATTEMPTS, complete_free
+from free_models import ModelOption, default_model, get_models
+from free_fallback import Attempt, MAX_ATTEMPTS, complete_with_fallback
+from chat_budget import settings
 
 router = APIRouter(prefix='/api/chat')
 
@@ -48,29 +49,38 @@ class ChatReply(BaseModel):
     used_model: str
     attempts: list[Attempt]
     fallback_used: bool
+    is_paid: bool
+    estimated_cost_usd: str
+    actual_cost_usd: str | None
+    budget_usd: str
+    next_model: str
 
 
 class ModelList(BaseModel):
-    models: list[FreeModel]
+    models: list[ModelOption]
     default_model: str
-    free_only: bool = True
+    free_only: bool = False
+    unmoderated_only: bool = True
+    paid_fallback: bool = True
+    max_paid_attempts: int = 1
+    estimated_budget_usd: str
+    max_output_tokens: int
     max_attempts: int = MAX_ATTEMPTS
 
 
 @router.get('/models', response_model=ModelList)
 async def models():
-    items = await get_free_models()
-    return ModelList(models=items, default_model=default_model(items))
+    items = await get_models()
+    budget, output = settings()
+    return ModelList(models=items, default_model=default_model(items), estimated_budget_usd=format(budget, 'f'), max_output_tokens=output)
 
 
 @router.post('/completions', response_model=ChatReply)
 async def complete(body: ChatRequest):
     started = monotonic()
-    if not free_model_ids_only(body.model):
-        raise HTTPException(400, 'Only free models are allowed. Paid fallback is disabled.')
-    available = await get_free_models()
+    available = await get_models(force_refresh=True)
     if not any(m.id == body.model for m in available):
-        raise HTTPException(400, 'This model is not currently listed as free. Choose another model.')
+        raise HTTPException(400, 'This model is not currently eligible. Refresh the model list and choose an unmoderated-provider model.')
     if not os.environ.get('OPENROUTER_API_KEY'):
         raise HTTPException(503, 'The service key has not been configured.')
     system = {'role': 'system', 'content': (
@@ -78,9 +88,10 @@ async def complete(body: ChatRequest):
         'Be accurate, direct and concise. Use Markdown and LaTeX for math. '
         'You are not an official Desmos service. You cannot see other pages unless their '
         'contents are included in this conversation.')}
-    result = await complete_free(os.environ['OPENROUTER_URL'], {
+    result = await complete_with_fallback(os.environ['OPENROUTER_URL'], {
         'Authorization': 'Bearer ' + os.environ['OPENROUTER_API_KEY'],
         'HTTP-Referer': os.environ['APP_ORIGIN'], 'X-Title': 'Scientific Calculator Companion',
         'X-Session-ID': str(body.session_id),
     }, [system] + [m.model_dump() for m in body.messages], body.model, available, started)
-    return ChatReply(session_id=str(body.session_id), requested_model=body.model, **result)
+    next_model = result['used_model'] if not result['is_paid'] else default_model(available)
+    return ChatReply(session_id=str(body.session_id), requested_model=body.model, next_model=next_model, **result)

@@ -18,6 +18,8 @@ For a manually configured service, add the following. Replace the key and public
 OPENROUTER_API_KEY=YOUR_OPENROUTER_API_KEY
 OPENROUTER_MODEL=qwen/qwen3.8-27b:free
 OPENROUTER_URL=https://openrouter.ai/api/v1/chat/completions
+OPENROUTER_REQUEST_BUDGET_USD=0.01
+OPENROUTER_MAX_OUTPUT_TOKENS=1024
 APP_ORIGIN=https://YOUR-SERVICE.onrender.com
 CORS_ORIGINS=https://YOUR-SERVICE.onrender.com
 HOST=0.0.0.0
@@ -34,7 +36,8 @@ GAME_CACHE_MAX_BYTES=500000000
 ```
 
 - `MONGO_URL` and `DB_NAME` are **not required**. Existing values can remain; they are used only if you explicitly import earlier server-stored conversations.
-- `OPENROUTER_FALLBACK_MODEL` is no longer used. No paid model fallback exists.
+- `OPENROUTER_FALLBACK_MODEL` is no longer used. The latest mode tries free models first, then **one cheapest eligible paid attempt**, selected using current pricing.
+- Existing services must add `OPENROUTER_REQUEST_BUDGET_USD` and `OPENROUTER_MAX_OUTPUT_TOKENS` before deploying this version. The budget is an application **estimate threshold**, not a provider-enforced billing cap. Set it to `0` to prohibit paid attempts. Keep an OpenRouter key-level spending limit for actual account protection.
 - `CONTENT_ORIGIN` now uses the user's confirmed HTTPS hostname, `https://content.desmos.lol`, enabling full-page Web browsing. For another domain, configure its own separate HTTPS content origin; if it is not ready, leave the value empty for script-free reader mode only.
 - Existing manually configured Render services must set **both** `CONTENT_ORIGIN` and `BROWSER_SHORTCUTS` from the block above. Updating repository code does not automatically update dashboard environment values. The Blueprint contains both settings for new/synced services.
 - Render supplies `PORT`. The Dockerfile sets the frontend's public `REACT_APP_BACKEND_URL=/`; do not override either with a preview value.
@@ -56,15 +59,17 @@ Expected response:
 
 The health check no longer contacts MongoDB. An unavailable database cannot make this app's normal startup or health check fail.
 
-## 4. Free model selection and privacy
+## 4. Unmoderated-provider selection, cheapest paid fallback, and privacy
 
-The Notes page loads OpenRouter's current catalogue and offers free text models. Every request is checked against the free catalogue, restricted to `:free` IDs or `openrouter/free`, and sent with zero prompt/completion/request price caps and provider fallback disabled. Paid model IDs are rejected, even if manually submitted.
+Only explicit text models whose catalogue `top_provider.is_moderated` is **exactly false** are eligible. Moderated, unknown and malformed flags are excluded. Dynamic OpenRouter routers, unknown/negative prices, request fees, separately priced reasoning, write surcharges and tier-price overrides are excluded. **This metadata does not guarantee unrestricted output or control every actual routing provider's moderation.** Model/provider policies still apply.
 
-The default model is a preference, not a billing escape hatch: if it disappears from the free catalogue, the picker selects another currently listed free model. Each message tries that selection first, then automatically tries other distinct, currently free models after model-specific rate limits, temporary server/network errors, timeouts, or empty answers — **five model attempts maximum**. The same conversation context is sent on every attempt. No paid model is substituted.
+The picker selects a preferred eligible **free** model when available. Each request refreshes the catalogue, tries that model and eligible free alternatives, then at most **one paid model** with the lowest conservative estimated cost for the full conversation and output allowance. There are up to **five total attempts**: up to four free plus one paid, or up to five free if no paid option fits. Selecting a paid ID directly cannot bypass free-first/cheapest routing. After a paid reply, the next turn returns to a free preference if available.
 
-Requests have a 55-second overall budget (including catalogue lookup), a 12-second per-model limit, and honor `Retry-After`; fewer than five attempts may run if the time budget expires, fewer models are available, or a provider requires a longer wait. Invalid credentials, account-wide quota, billing/account errors, or policy rejection stop retries rather than switching around those restrictions. The response shows the answering model, whether it switched, and an expandable attempt list. The successful **free routing ID**, not a potentially different provider-reported model name, becomes the selection for the next turn.
+Default limits: **$0.01 estimated request threshold**, **1024 output tokens**,55 seconds overall and12 seconds per attempt. Estimate uses UTF-8 bytes with margin/message framing, not characters÷4. Only models fitting the context and estimated budget are attempted. Paid provider input/output caps use USD per million tokens, with request fee capped at0, provider fallback disabled, and cheaper-provider routing. Reasoning is disabled when supported; no tools/search/plugins/media are requested.
 
-Free rate limits, provider availability, account settings, and model policies still apply; fallback improves resilience but cannot guarantee an answer. A provider listed as unmoderated does not mean a model has no built-in rules. The picker uses the live catalogue rather than inventing model availability.
+**Estimates are not guaranteed charges:** OpenRouter does not provide a documented total-dollar cap per chat call. Timeouts, malformed/empty replies and failed requests may still incur charges, so this mode never sends a second paid attempt. Provider-reported `usage.cost` is labeled as reported cost; missing usage is labeled unavailable, with estimate shown separately. Keep the server key's real spending limit low: this application is public and has no account login.
+
+Explicit free-tier-only quotas can advance to the authorized paid fallback. Authentication failures, exhausted-credit/key-limit402, policy403, and general account-wide quotas stop retries. Provider Retry-After is respected; insufficient time can mean fewer attempts. Full history and the same session ID are sent to each attempt. Fallback cannot guarantee an answer or remove a model's own rules.
 
 Messages are sent to OpenRouter/the selected provider for a response, but this application's server does not save them. Browser history is not synced across devices or subdomains. Export notes before clearing site data, changing browsers, or moving to another hostname. Deleting a local conversation does not delete any copy retained by a third-party provider under its own policy.
 
@@ -107,12 +112,19 @@ Reserve `content.desmos.lol` for embedded third-party content, not the main Note
 - Bookmarks can be added from the address-bar star or Bookmarks manager, renamed, edited, removed, searched, and opened in the current or a new Web tab. These are app bookmarks, not the browser's native bookmark database. They do not sync across devices/hostnames or require a server database. Clearing site data removes them.
 - Current compatibility check: YouTube rendered its real page in the isolated browser; TikTok rendered its own error page with proxy/script compatibility errors. Use **Open in new tab** for sites that do not work inside Web. Do not interpret a connected transport as proof every site feature works.
 
+### Header window launcher
+
+The Desmos logo, Scientific Calculator and Kentucky Version labels open the full app in an `about:blank` wrapper window, initially showing their existing Notes/Web/Library destinations. The original tab is not redirected or closed. Inside the wrapper, these labels and app navigation change the inner route without opening more wrappers; the top-level address stays `about:blank`. Pop-ups must be allowed. A blocked window produces a visible error without navigating away.
+
+**This is a presentation feature, not monitoring protection.** Real domains are still used. GoGuardian, browser extensions, managed-device software and network monitoring can still observe destinations. The launcher does not disable or hide from them. Direct external links intentionally open their actual destination separately.
+
 ## Troubleshooting
 
 - **A health503 log but the Render URL now returns200:** check the log timestamp and deployment it belongs to. Compare the current `https://YOUR-SERVICE.onrender.com/api/health` response before changing code. A historical log alone does not prove the current release is failing.
 - **Render URL works but custom-domainHTTPS fails:** check Settings→Custom Domains for domain verification and certificate status. Compare wildcard validation targets with the exact values Render supplies. A TLS handshake failure occurs before the app's health handler and is not fixed by adding MongoDB, changing CORS, or forcing the health response to200.
 - **Old MongoDB503 health response:** the server is running older code. Deploy the latest commit and check the new response above.
-- **Model429/503:** automatic retries tried available free alternatives or stopped at the shared quota/wait/time limit. Expand the attempt list for model-level results. The unsent message remains a local draft; retry later. There is no paid fallback.
+- **Model429/503:** expand the attempt list for free and paid attempts. Free-only quota may trigger the single paid fallback; general account quota/time limits can stop routing. Failed paid attempts can still bill. Your draft remains local.
+- **Model402:** check OpenRouter credit and key spending limit. No further model is tried; don't disable spending protection just to hide the error.
 - **Model401/402:** verify the server-side key/account limits. No paid request is substituted.
 - **Notes disappear on another hostname/device:** browser-only storage is intentionally separate. Use Export notes for a backup.
 - **No lockfile in a repository export:** the existing Dockerfile generates one during install when absent; including `frontend/yarn.lock` is still recommended.

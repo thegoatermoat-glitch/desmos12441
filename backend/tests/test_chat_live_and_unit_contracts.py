@@ -1,5 +1,6 @@
 import sys
 import uuid
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -33,10 +34,10 @@ class TestUnitContracts:
     def test_completions_request_body_enforces_zero_price_and_no_fallback(self, monkeypatch):
         sent_payload = {}
 
-        async def fake_models():
+        async def fake_models(force_refresh=False):
             return [
-                FreeModel(id="qwen/qwen3.8-27b:free", name="Qwen", context_length=32768),
-                FreeModel(id="inclusionai/ling-3.0-flash-fin:free", name="Ling", context_length=32768),
+                FreeModel(id="qwen/qwen3.8-27b:free", name="Qwen", context_length=32768, is_moderated=False),
+                FreeModel(id="inclusionai/ling-3.0-flash-fin:free", name="Ling", context_length=32768, is_moderated=False),
             ]
 
         class FakeResponse:
@@ -66,11 +67,13 @@ class TestUnitContracts:
                 sent_payload["headers"] = headers
                 return FakeResponse()
 
-        monkeypatch.setattr(chat, "get_free_models", fake_models)
+        monkeypatch.setattr(chat, "get_models", fake_models)
         monkeypatch.setattr(free_fallback.httpx, "AsyncClient", FakeAsyncClient)
         monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
         monkeypatch.setenv("OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/completions")
         monkeypatch.setenv("APP_ORIGIN", "https://example.test")
+        monkeypatch.setenv("OPENROUTER_REQUEST_BUDGET_USD", "0.01")
+        monkeypatch.setenv("OPENROUTER_MAX_OUTPUT_TOKENS", "1024")
 
         session_id = str(uuid.uuid4())
         client = TestClient(server.app)
@@ -87,23 +90,22 @@ class TestUnitContracts:
         assert data["model"] == "provider/normalized-slug"
 
         body = sent_payload["json"]
-        assert body["provider"] == {
-            "max_price": {"prompt": 0, "completion": 0, "request": 0},
-            "allow_fallbacks": False,
-            "require_parameters": True,
-        }
+        assert body["provider"]["max_price"] == {"prompt": 0, "completion": 0, "request": 0}
+        assert body["provider"]["allow_fallbacks"] is False
+        assert body["provider"]["require_parameters"] is True
+        assert body["provider"]["sort"] == "price"
         assert "models" not in body
-        assert body["max_tokens"] == 1200
+        assert body["max_tokens"] == 1024
         assert body["messages"][0]["role"] == "system"
         assert sent_payload["headers"]["X-Session-ID"] == session_id
 
     def test_completions_preserve_messages_and_session_across_retries(self, monkeypatch):
         sent = []
 
-        async def fake_models():
+        async def fake_models(force_refresh=False):
             return [
-                FreeModel(id="qwen/qwen3.8-27b:free", name="Qwen", context_length=32768),
-                FreeModel(id="inclusionai/ling-3.0-flash-fin:free", name="Ling", context_length=32768),
+                FreeModel(id="qwen/qwen3.8-27b:free", name="Qwen", context_length=32768, is_moderated=False),
+                FreeModel(id="inclusionai/ling-3.0-flash-fin:free", name="Ling", context_length=32768, is_moderated=False),
             ]
 
         class FakeResponse:
@@ -135,7 +137,7 @@ class TestUnitContracts:
                     "choices": [{"message": {"content": "READY"}}],
                 })
 
-        monkeypatch.setattr(chat, "get_free_models", fake_models)
+        monkeypatch.setattr(chat, "get_models", fake_models)
         monkeypatch.setattr(free_fallback.httpx, "AsyncClient", FakeAsyncClient)
         async def _skip_sleep(*_args, **_kwargs):
             return None
@@ -144,6 +146,8 @@ class TestUnitContracts:
         monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
         monkeypatch.setenv("OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/completions")
         monkeypatch.setenv("APP_ORIGIN", "https://example.test")
+        monkeypatch.setenv("OPENROUTER_REQUEST_BUDGET_USD", "0.01")
+        monkeypatch.setenv("OPENROUTER_MAX_OUTPUT_TOKENS", "1024")
 
         session_id = str(uuid.uuid4())
         messages = [
@@ -225,3 +229,42 @@ class TestLiveFreeModelIntegration:
         ])
         assert isolated.status_code == 200
         assert isolated.json()["session_id"] != str(thread_id)
+
+
+# Live paid verification: dynamically choose cheapest currently-eligible paid model and make one real call.
+class TestLivePaidIntegration:
+    def test_live_cheapest_paid_single_call_under_budget(self, api_client, base_url, monkeypatch):
+        models_response = api_client.get(f"{base_url}/api/chat/models", timeout=60)
+        assert models_response.status_code == 200
+        data = models_response.json()
+        models = data.get("models", [])
+        paid = [m for m in models if not m.get("is_free")]
+        if not paid:
+            pytest.skip("No eligible paid model currently listed")
+
+        def conservative_price(item):
+            return Decimal(str(item["prompt_price"])) + Decimal(str(item["completion_price"]))
+
+        cheapest_paid = min(paid, key=lambda m: (conservative_price(m), m["id"]))
+
+        async def paid_only_models(force_refresh=False):
+            # Controlled catalogue fixture boundary: real upstream inference still used.
+            return [FreeModel(**cheapest_paid)]
+
+        monkeypatch.setattr(chat, "get_models", paid_only_models)
+        client = TestClient(server.app)
+        response = client.post("/api/chat/completions", json={
+            "session_id": str(uuid.uuid4()),
+            "model": cheapest_paid["id"],
+            "messages": [{"role": "user", "content": "Reply exactly: PAID_READY"}],
+        })
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body["requested_model"] == cheapest_paid["id"]
+        assert body["used_model"] == cheapest_paid["id"]
+        assert body["is_paid"] is True
+        assert isinstance(body.get("content"), str) and body["content"].strip() != ""
+        assert len(body.get("attempts", [])) == 1
+        assert body["attempts"][0]["is_paid"] is True
+        assert body["attempts"][0]["estimated_cost_usd"] is not None
