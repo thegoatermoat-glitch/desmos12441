@@ -1,4 +1,4 @@
-"""Live unmoderated-provider text catalogue (historical module name retained)."""
+"""Publisher-verified uncensored/unrestricted models intersected with live pricing."""
 import asyncio
 import os
 import time
@@ -8,6 +8,7 @@ from urllib.parse import urlsplit, urlunsplit
 import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, StrictBool, computed_field
+from publisher_models import catalogue_evidence, publisher_evidence
 
 
 class ModelOption(BaseModel):
@@ -20,6 +21,12 @@ class ModelOption(BaseModel):
     request_price: str = '0'
     max_completion_tokens: int | None = None
     supports_reasoning: bool = False
+    publisher_verified: bool = False
+    publisher_label: str | None = None
+    publisher_model_name: str | None = None
+    publisher_url: str | None = None
+    publisher_quote: str | None = None
+    publisher_reviewed_on: str | None = None
 
     @computed_field
     @property
@@ -50,7 +57,8 @@ def free_model_ids_only(model_id: str) -> bool:
 
 
 def eligible_model(model: ModelOption) -> bool:
-    return (model.is_moderated is False and not model.id.startswith('openrouter/')
+    return (publisher_evidence(model.id) is not None and model.publisher_verified is True
+            and model.is_moderated is False and not model.id.startswith('openrouter/')
             and all(nonnegative_price(p) is not None for p in (model.prompt_price, model.completion_price))
             and is_zero(model.request_price) and model.context_length > 0)
 
@@ -63,6 +71,9 @@ def parse_catalogue(items: list) -> list[ModelOption]:
         model_id, pricing = item.get('id'), item.get('pricing')
         architecture, provider = item.get('architecture'), item.get('top_provider')
         if not isinstance(model_id, str) or not isinstance(pricing, dict) or not isinstance(architecture, dict) or not isinstance(provider, dict):
+            continue
+        evidence = catalogue_evidence(item)
+        if not evidence:
             continue
         if provider.get('is_moderated') is not False or model_id.startswith('openrouter/') or model_id in seen or 'content-safety' in model_id:
             continue
@@ -90,7 +101,10 @@ def parse_catalogue(items: list) -> list[ModelOption]:
         result.append(ModelOption(id=model_id, name=name if isinstance(name, str) and name else model_id,
             context_length=context, is_moderated=False, max_completion_tokens=cap,
             supports_reasoning='reasoning' in parameters, prompt_price=str(pricing['prompt']),
-            completion_price=str(pricing['completion']), request_price='0'))
+            completion_price=str(pricing['completion']), request_price='0', publisher_verified=True,
+            publisher_label=evidence['label'], publisher_model_name=evidence['model_name'],
+            publisher_url=evidence['publisher_url'], publisher_quote=evidence['quote'],
+            publisher_reviewed_on=evidence['reviewed_on']))
         seen.add(model_id)
     return sorted(result, key=lambda m: (not m.is_free, Decimal(m.prompt_price) + Decimal(m.completion_price), m.name.lower()))
 
@@ -118,7 +132,7 @@ async def get_models(force_refresh: bool = False) -> list[ModelOption]:
         except (httpx.HTTPError, ValueError, KeyError, TypeError):
             raise HTTPException(503, 'The eligible model list is unavailable. Please try again.')
         if not models:
-            raise HTTPException(503, 'No models with an explicitly unmoderated listed provider and known pricing are available.')
+            raise HTTPException(503, 'No publisher-verified uncensored or unrestricted model is currently available. Ordinary-model fallback is disabled.')
         _models, _expires = models, time.monotonic() + 180
         return models
 

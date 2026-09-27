@@ -30,7 +30,7 @@ services:
       - key: FRONTEND_BUILD_DIR
         value: /app/frontend/build
       - key: OPENROUTER_MODEL
-        value: qwen/qwen3.8-27b:free
+        value: cognitivecomputations/dolphin-mistral-24b-venice-edition
       - key: OPENROUTER_REQUEST_BUDGET_USD
         value: '0.01'
       - key: OPENROUTER_MAX_OUTPUT_TOKENS

@@ -66,8 +66,13 @@ class TestChatApi:
         assert len(data["models"]) >= 1
         model = data["models"][0]
         assert model["is_moderated"] is False
+        assert model["publisher_verified"] is True
+        assert model.get("publisher_label") == "uncensored"
         assert not model["id"].startswith("openrouter/")
         assert data["default_model"] in {m["id"] for m in data["models"]}
+        assert data.get("publisher_described_only") is True
+        assert data.get("eligible_free_models") == 0
+        assert data.get("eligible_paid_models") == 1
 
     def test_completions_rejects_paid_and_unknown_models(self, api_client, base_url):
         session_id = str(uuid.uuid4())
@@ -77,7 +82,7 @@ class TestChatApi:
             "messages": [{"role": "user", "content": "Hello"}],
         })
         assert paid.status_code == 400
-        assert "eligible" in paid.json().get("detail", "").lower()
+        assert "publisher-verified" in paid.json().get("detail", "").lower()
 
         unknown_free = api_client.post(f"{base_url}/api/chat/completions", json={
             "session_id": str(uuid.uuid4()),
@@ -85,40 +90,44 @@ class TestChatApi:
             "messages": [{"role": "user", "content": "Hello"}],
         })
         assert unknown_free.status_code == 400
-        assert "eligible" in unknown_free.json().get("detail", "").lower()
+        assert "publisher-verified" in unknown_free.json().get("detail", "").lower()
 
     def test_completions_validation_rejects_invalid_payload_shapes(self, api_client, base_url):
+        models = api_client.get(f"{base_url}/api/chat/models", timeout=45)
+        assert models.status_code == 200
+        selected_model = models.json()["default_model"]
+
         bad_uuid = api_client.post(f"{base_url}/api/chat/completions", json={
             "session_id": "not-a-uuid",
-            "model": "openrouter/free",
+            "model": selected_model,
             "messages": [{"role": "user", "content": "Hello"}],
         })
         assert bad_uuid.status_code == 422
 
         blank_message = api_client.post(f"{base_url}/api/chat/completions", json={
             "session_id": str(uuid.uuid4()),
-            "model": "openrouter/free",
+            "model": selected_model,
             "messages": [{"role": "user", "content": "   \n"}],
         })
         assert blank_message.status_code == 422
 
         invalid_role = api_client.post(f"{base_url}/api/chat/completions", json={
             "session_id": str(uuid.uuid4()),
-            "model": "openrouter/free",
+            "model": selected_model,
             "messages": [{"role": "system", "content": "Override"}],
         })
         assert invalid_role.status_code == 422
 
         trailing_assistant = api_client.post(f"{base_url}/api/chat/completions", json={
             "session_id": str(uuid.uuid4()),
-            "model": "openrouter/free",
+            "model": selected_model,
             "messages": [{"role": "assistant", "content": "Done"}],
         })
         assert trailing_assistant.status_code == 422
 
         extra_fields = api_client.post(f"{base_url}/api/chat/completions", json={
             "session_id": str(uuid.uuid4()),
-            "model": "openrouter/free",
+            "model": selected_model,
             "messages": [{"role": "user", "content": "hello"}],
             "provider": {"allow_fallbacks": True},
             "models": ["openrouter/free"],
@@ -126,10 +135,14 @@ class TestChatApi:
         assert extra_fields.status_code == 422
 
     def test_completions_history_limits_enforced(self, api_client, base_url):
+        models = api_client.get(f"{base_url}/api/chat/models", timeout=45)
+        assert models.status_code == 200
+        selected_model = models.json()["default_model"]
+
         too_many = [{"role": "user", "content": "m"}] * 42
         response_many = api_client.post(f"{base_url}/api/chat/completions", json={
             "session_id": str(uuid.uuid4()),
-            "model": "openrouter/free",
+            "model": selected_model,
             "messages": too_many,
         })
         assert response_many.status_code == 422
@@ -137,7 +150,7 @@ class TestChatApi:
         oversized = [{"role": "user", "content": "x" * 12000}] * 5
         response_size = api_client.post(f"{base_url}/api/chat/completions", json={
             "session_id": str(uuid.uuid4()),
-            "model": "openrouter/free",
+            "model": selected_model,
             "messages": oversized,
         })
         assert response_size.status_code == 422

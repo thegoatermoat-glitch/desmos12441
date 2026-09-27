@@ -1,0 +1,63 @@
+{
+  "summary": "Executed strict allowlist backend regression + live paid-model chat checks; updated outdated tests to current publisher-verified-only policy and ran targeted Notes UI validation on preview.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Notes model-refresh 503 UX (without full page reload)",
+        "issue": "Could not deterministically observe the inline error-banner transition when forcing /api/chat/models=503 via Playwright route during refresh-click path; unavailable state is visible when 503 is forced at reload time.",
+        "affected_selectors": [
+          "[data-testid='chat-model-refresh']",
+          "[data-testid='chat-error']",
+          "[data-testid='chat-model-select']"
+        ]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_free_fallback_and_catalogue.py",
+    "/app/backend/tests/test_chat_live_and_unit_contracts.py",
+    "/app/backend/tests/test_core_endpoints.py",
+    "/app/test_reports/pytest/pytest_iteration12_target.xml",
+    "/app/test_reports/pytest/pytest_iteration12_unit_contracts.xml",
+    "/root/.emergent/automation_output/20260927_203451/console_20260927_203451.log",
+    "/root/.emergent/automation_output/20260927_203534/console_20260927_203534.log"
+  ],
+  "action_items": [
+    "Main agent: self-verify refresh-click 503 UX path (no reload) for draft retention + explicit unavailable error state; automation route interception was inconsistent in this run.",
+    "Keep production allowlist strict (do not widen to satisfy old fixtures); only extend audited IDs after publisher evidence review."
+  ],
+  "critical_code_review_comments": [
+    "Legacy tests were still asserting generic unmoderated/free-era IDs; they are now aligned to audited publisher-verified model identity and strict response-model verification.",
+    "Paid live-call volume guard is now respected in tests by skipping an extra paid integration case after equivalent coverage to avoid unnecessary spend."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_free_fallback_and_catalogue.py",
+    "/app/backend/tests/test_chat_live_and_unit_contracts.py",
+    "/app/backend/tests/test_core_endpoints.py",
+    "/app/test_reports/iteration_11.json"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "75%"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend target suite result: 35 passed, 1 skipped, 0 failed. Live chat completion path succeeded with current default paid model and multi-turn same-session retention checks. UI confirmed paid-only notice text, single Dolphin option, correct publisher card href, and price units. Three attempts were made to automate refresh-click 503 handling; reload-time forced 503 clearly shows unavailable state, but click-path banner transition could not be captured deterministically.",
+  "rca of the issue": "RCA (test-harness boundary): refresh-click 503 check likely impacted by timing/cache/service-worker behavior in preview, causing non-deterministic assertion timing for [data-testid='chat-error']. Network logs confirm forced 503 occurred. Mitigation: instrument client-side model-refresh promise outcome (or expose deterministic test hook) to assert state transition without relying only on timing-sensitive DOM observation.",
+  "main_agent_verification": {
+    "status": "passed",
+    "remaining_first_party_issues": [],
+    "refresh_failure": "Verified WITHOUT reload: exact catalogue route intercepted503, awaited intercepted event and visible alert; draft retained, model selector and Send disabled. Removed fixture, clicked Refresh, real model list recovered with draft intact and Send enabled. No production test hook/code change needed.",
+    "responsive": "Notes no horizontal overflow at320/768/1024/1440.",
+    "evidence": "/root/.emergent/automation_output/20260927_203728/console_20260927_203728.log",
+    "unit_checks": "50 backend unit checks passed in publisher-policy-final-unit.xml; final17frontend checks passed in logo-cover-publisher-frontend-unit.json; final productionbuild successful.",
+    "boundaries": "Only controlled test fixtures simulate catalogue/provider/image errors. Production APIs are real. No verified free model currently qualifies, and no ordinary model is silently substituted. Additional final tests made no paid calls."
+  }
+}

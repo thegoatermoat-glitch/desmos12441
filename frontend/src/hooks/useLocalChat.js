@@ -25,10 +25,10 @@ export const useLocalChat = () => {
     try {
       const result = await api('/chat/models');
       if (!mounted.current) return;
-      setModels(result.models);
+      setModels(result.models.filter(item => item.publisher_verified === true));
       setPolicy(result);
       setModel(previous => result.models.some(m => m.id === previous) ? previous : result.default_model);
-    } catch (failure) { if (mounted.current) setModelError(failure.message); }
+    } catch (failure) { if (mounted.current) { setModels([]); setPolicy(null); setModel(''); setModelError(failure.message); } }
   }, []);
   useEffect(() => {
     if (!models.length || !policy) return;
@@ -92,6 +92,7 @@ export const useLocalChat = () => {
         { role: 'user', content }, { role: 'assistant', content: answer.content, model: answer.model,
           requested_model: answer.requested_model, used_model: answer.used_model,
           is_paid: answer.is_paid, estimated_cost_usd: answer.estimated_cost_usd, actual_cost_usd: answer.actual_cost_usd, budget_usd: answer.budget_usd,
+          publisher_model_name: answer.publisher_model_name, publisher_label: answer.publisher_label, publisher_url: answer.publisher_url,
           fallback_used: answer.fallback_used, attempts: answer.attempts }] };
       if (mounted.current) { setCurrent(completed); setInput(''); setModel(nextModel); setLastAttempts(answer.attempts); }
       await saveConversation(completed); await refresh();

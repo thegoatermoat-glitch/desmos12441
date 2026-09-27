@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import free_fallback
 import free_models
+import publisher_models
 from free_models import FreeModel
 
 
@@ -22,7 +23,29 @@ def _model(model_id: str, *, name: str | None = None, prompt="0", completion="0"
         prompt_price=str(prompt),
         completion_price=str(completion),
         request_price=str(request),
+        publisher_verified=True,
+        publisher_label="uncensored",
+        publisher_model_name=name or model_id,
+        publisher_url="https://publisher.test/model",
+        publisher_quote="publisher described unrestricted",
+        publisher_reviewed_on="2026-09-27",
     )
+
+
+def _set_audited(monkeypatch, model_ids):
+    monkeypatch.setattr(publisher_models, "AUDITED_MODELS", {
+        model_id: {
+            "model_name": f"Model {model_id}",
+            "label": "uncensored",
+            "publisher": "Synthetic Publisher",
+            "publisher_url": f"https://publisher.test/{model_id.replace('/', '-')}",
+            "quote": "publisher described unrestricted",
+            "canonical_slug": f"canonical/{model_id.replace('/', '-')}",
+            "hugging_face_ids": [f"synthetic/{model_id.replace('/', '-')}"] ,
+            "reviewed_on": "2026-09-27",
+        }
+        for model_id in model_ids
+    })
 
 
 class _FakeResponse:
@@ -68,6 +91,7 @@ def test_candidates_free_first_then_single_cheapest_paid(monkeypatch):
         _model("paid/cheapest", name="Paid Cheapest", prompt="0.000000001", completion="0.000000001"),
         _model("paid/expensive", name="Paid Expensive", prompt="0.0000001", completion="0.0000001"),
     ]
+    _set_audited(monkeypatch, [m.id for m in models])
     messages = [{"role": "user", "content": "hello"}]
 
     picked = free_fallback.candidates("a/selected-free", models, messages)
@@ -88,6 +112,7 @@ def test_candidates_zero_budget_forbids_paid(monkeypatch):
         _model("b/free"),
         _model("paid/eligible", prompt="0.000000001", completion="0.000000001"),
     ]
+    _set_audited(monkeypatch, [m.id for m in models])
 
     picked = free_fallback.candidates("a/selected-free", models, [{"role": "user", "content": "hi"}])
     assert all(model.is_free for model in picked)
@@ -117,6 +142,7 @@ async def test_complete_with_fallback_uses_one_paid_attempt_max(monkeypatch):
         _model("b/free"),
         _model("paid/cheapest", prompt="0.000000001", completion="0.000000001"),
     ]
+    _set_audited(monkeypatch, [m.id for m in models])
 
     result = await free_fallback.complete_with_fallback(
         "https://openrouter.ai/api/v1/chat/completions",
@@ -136,7 +162,7 @@ async def test_complete_with_fallback_uses_one_paid_attempt_max(monkeypatch):
     assert all(call["json"]["max_tokens"] == 1024 for call in recorded)
 
 
-def test_parse_catalogue_strict_filters_and_price_validation():
+def test_parse_catalogue_strict_filters_and_price_validation(monkeypatch):
     rows = [
         {
             "id": "ok/free-model",
@@ -204,6 +230,13 @@ def test_parse_catalogue_strict_filters_and_price_validation():
     ]
 
     rows[-1]["id"] = "openrouter/router-model"
+    _set_audited(monkeypatch, [row["id"] for row in rows])
+    rows[0]["canonical_slug"] = "canonical/ok-free-model"
+    rows[0]["hugging_face_id"] = "synthetic/ok-free-model"
+    for row in rows[1:]:
+        row["canonical_slug"] = f"canonical/{row['id'].replace('/', '-')}"
+        row["hugging_face_id"] = f"synthetic/{row['id'].replace('/', '-')}"
+
     parsed = free_models.parse_catalogue(rows)
     ids = [m.id for m in parsed]
 
@@ -289,9 +322,10 @@ async def test_paid_failure_never_triggers_a_second_paid_request(monkeypatch, pa
     monkeypatch.setattr(free_fallback.httpx, "AsyncClient", _fake_async_client_factory([paid_event], calls))
     first = _model("paid/low", prompt="0.00000001", completion="0.00000001")
     second = _model("paid/high", prompt="0.0000001", completion="0.0000001")
+    _set_audited(monkeypatch, [first.id, second.id])
     with pytest.raises(HTTPException) as failure:
         await free_fallback.complete_with_fallback("https://provider.test/completions", {},
-            [{"role": "user", "content": "Hi"}], second.id, [second, first], free_fallback.monotonic())
+            [{"role": "user", "content": "Hi"}], first.id, [second, first], free_fallback.monotonic())
     assert len(calls) == 1
     assert calls[0]["json"]["model"] == first.id
     assert failure.value.detail["paid_attempted"] is True
@@ -305,4 +339,5 @@ def test_unicode_context_and_budget_checks_are_conservative(monkeypatch):
     messages = [{"role": "user", "content": "漢🙂" * 300}]
     assert prompt_bound(messages) > len(messages[0]["content"].encode("utf-8"))
     model = _model("paid/low", prompt="0.00000001", completion="0.00000001")
+    _set_audited(monkeypatch, [model.id])
     assert free_fallback.candidates(model.id, [model], messages) == []

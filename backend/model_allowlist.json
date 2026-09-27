@@ -1,0 +1,15 @@
+{
+  "cognitivecomputations/dolphin-mistral-24b-venice-edition": {
+    "model_name": "Dolphin Mistral 24B Venice Edition",
+    "label": "uncensored",
+    "publisher": "Dolphin / dphn",
+    "publisher_url": "https://huggingface.co/dphn/Dolphin-Mistral-24B-Venice-Edition",
+    "quote": "with the goal of creating the most uncensored version of Mistral 24B for use within the Venice ecosystem",
+    "canonical_slug": "venice/uncensored",
+    "hugging_face_ids": [
+      "cognitivecomputations/Dolphin-Mistral-24B-Venice-Edition",
+      "dphn/Dolphin-Mistral-24B-Venice-Edition"
+    ],
+    "reviewed_on": "2026-09-27"
+  }
+}

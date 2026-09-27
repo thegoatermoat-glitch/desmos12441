@@ -6,6 +6,7 @@ const reasons = {
   account_error: 'Account error', account_limit: 'Account limit reached',
   policy_error: 'Provider policy', request_error: 'Request rejected',
   free_limit: 'Free-tier quota reached',
+  unverified_model: 'Unverified responder identity',
 };
 
 export const ModelAttempts = ({ attempts = [], testId }) => {

@@ -12,6 +12,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 from free_models import ModelOption, eligible_model
 from chat_budget import settings, prompt_bound, output_limit, estimate, provider_limits, reported_cost
+from publisher_models import verified_response_model
 
 MAX_ATTEMPTS = 5
 TOTAL_BUDGET_SECONDS = 55.0
@@ -33,7 +34,7 @@ def candidates(requested: str, models: list[ModelOption], messages: list[dict] |
     eligible = list({m.id: m for m in models if eligible_model(m)}.values())
     selected = next((m for m in eligible if m.id == requested), None)
     if selected is None:
-        raise HTTPException(400, 'Choose a currently listed model with an explicitly unmoderated provider and known pricing.')
+        raise HTTPException(400, 'Choose a currently listed publisher-verified uncensored or unrestricted model. Ordinary-model fallback is disabled.')
     eligible = [m for m in eligible if tokens + output_limit(m, configured_output) <= m.context_length]
     pool = sorted((m for m in eligible if m.is_free and m.id != requested), key=lambda m: (
         not bool(re.search(r'\b(small|mini|flash|lightning|lfm|xs)\b', m.name, re.I)), m.name.lower()))
@@ -149,6 +150,9 @@ async def complete_with_fallback(url: str, headers: dict, messages: list[dict], 
                     except (KeyError, IndexError, TypeError):
                         answer = None
                     if isinstance(answer, str) and answer.strip():
+                        if not verified_response_model(candidate.id, data.get('model')):
+                            attempt.status, attempt.reason = 502, 'unverified_model'
+                            failed(502, 'The provider did not report the verified model identity. Its answer was not returned and no ordinary fallback was used.', attempts)
                         attempt.status, attempt.reason = 200, 'answered'
                         reported_model = data.get('model')
                         actual_model = reported_model.strip() if isinstance(reported_model, str) else ''
@@ -192,7 +196,7 @@ async def complete_with_fallback(url: str, headers: dict, messages: list[dict], 
                 if delay >= remaining and delay > 0:
                     failed(429, 'The provider asks you to wait before retrying. Your draft is saved locally.', attempts, delay)
                 await asyncio.sleep(min(max(.15, delay), max(0, remaining)))
-    failed(503, f'No response was available after {len(attempts)} eligible model attempts. Your draft is saved locally.', attempts)
+    failed(503, f'No response was available after {len(attempts)} verified model attempts. No ordinary model was substituted. Your draft is saved locally.', attempts)
 
 
 complete_free = complete_with_fallback  # Historical import compatibility; policy is no longer free-only.

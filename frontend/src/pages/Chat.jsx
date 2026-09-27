@@ -7,7 +7,7 @@ import { ModelPicker } from '../components/chat/ModelPicker';
 import { ModelAttempts } from '../components/chat/ModelAttempts';
 import { downloadConversations } from '../lib/chatHistory';
 import { useLocalChat } from '../hooks/useLocalChat';
-import { formatCost } from '../lib/chatCosts';
+import { routingNotice } from '../lib/chatCosts';
 
 export default function Chat() {
   const chat = useLocalChat();
@@ -35,7 +35,7 @@ export default function Chat() {
         {chat.error && <ModelAttempts attempts={chat.lastAttempts} testId="chat-failed-attempts" />}
         <form className="chat-composer" onSubmit={send}><textarea ref={textbox} data-testid="chat-input" aria-label="Write a message" value={chat.input} maxLength={6000} disabled={disabled}
           onChange={event => chat.setInput(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder="Write a message…" rows={2} />
-          <div className="composer-bottom"><span data-testid="chat-cost-notice">{chat.policy ? `Free first · Cheapest paid fallback · ${formatCost(chat.policy.estimated_budget_usd)} estimated limit` : 'Loading cost policy…'}</span>
+          <div className="composer-bottom"><span data-testid="chat-cost-notice">{routingNotice(chat.policy)}</span>
             <button type="submit" title="Send message" aria-label="Send message" data-testid="chat-send" disabled={!chat.input.trim() || disabled || !chat.models.some(m => m.id === chat.model)}>{chat.busy ? <Loader2 className="spin" size={18} /> : <ArrowUp size={20} />}</button>
           </div>
         </form><p className="chat-budget-policy" data-testid="chat-budget-policy">One paid attempt maximum. Estimates are not billing caps; OpenRouter key limits still apply.</p>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export const GAME_COVER_FALLBACK = '/assets/game-cover-fallback.png';
+export const GAME_COVER_FALLBACK = '/assets/game-cover-fallback-logo.png';
 
 const CoverImage = ({ game }) => {
   const [failed, setFailed] = useState(false);

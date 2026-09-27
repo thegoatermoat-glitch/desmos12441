@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from free_models import ModelOption, default_model, get_models
 from free_fallback import Attempt, MAX_ATTEMPTS, complete_with_fallback
 from chat_budget import settings
+from publisher_models import publisher_evidence
 
 router = APIRouter(prefix='/api/chat')
 
@@ -54,6 +55,9 @@ class ChatReply(BaseModel):
     actual_cost_usd: str | None
     budget_usd: str
     next_model: str
+    publisher_model_name: str
+    publisher_label: str
+    publisher_url: str
 
 
 class ModelList(BaseModel):
@@ -66,21 +70,30 @@ class ModelList(BaseModel):
     estimated_budget_usd: str
     max_output_tokens: int
     max_attempts: int = MAX_ATTEMPTS
+    publisher_described_only: bool = True
+    eligible_free_models: int
+    eligible_paid_models: int
+    paid_fallback_available: bool
 
 
 @router.get('/models', response_model=ModelList)
 async def models():
     items = await get_models()
     budget, output = settings()
-    return ModelList(models=items, default_model=default_model(items), estimated_budget_usd=format(budget, 'f'), max_output_tokens=output)
+    free_count = sum(model.is_free for model in items)
+    paid_count = len(items) - free_count
+    return ModelList(models=items, default_model=default_model(items), estimated_budget_usd=format(budget, 'f'), max_output_tokens=output,
+                     eligible_free_models=free_count, eligible_paid_models=paid_count, paid_fallback_available=bool(paid_count and budget > 0))
 
 
 @router.post('/completions', response_model=ChatReply)
 async def complete(body: ChatRequest):
     started = monotonic()
+    if publisher_evidence(body.model) is None:
+        raise HTTPException(400, 'This model is not publisher-verified as uncensored or unrestricted. Ordinary-model fallback is disabled.')
     available = await get_models(force_refresh=True)
     if not any(m.id == body.model for m in available):
-        raise HTTPException(400, 'This model is not currently eligible. Refresh the model list and choose an unmoderated-provider model.')
+        raise HTTPException(400, 'This verified model is not currently available. Refresh the model list; ordinary-model fallback is disabled.')
     if not os.environ.get('OPENROUTER_API_KEY'):
         raise HTTPException(503, 'The service key has not been configured.')
     system = {'role': 'system', 'content': (
@@ -94,4 +107,6 @@ async def complete(body: ChatRequest):
         'X-Session-ID': str(body.session_id),
     }, [system] + [m.model_dump() for m in body.messages], body.model, available, started)
     next_model = result['used_model'] if not result['is_paid'] else default_model(available)
-    return ChatReply(session_id=str(body.session_id), requested_model=body.model, next_model=next_model, **result)
+    evidence = publisher_evidence(result['used_model'])
+    return ChatReply(session_id=str(body.session_id), requested_model=body.model, next_model=next_model,
+                     publisher_model_name=evidence['model_name'], publisher_label=evidence['label'], publisher_url=evidence['publisher_url'], **result)

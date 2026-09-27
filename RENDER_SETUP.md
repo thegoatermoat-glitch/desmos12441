@@ -16,7 +16,7 @@ For a manually configured service, add the following. Replace the key and public
 
 ```env
 OPENROUTER_API_KEY=YOUR_OPENROUTER_API_KEY
-OPENROUTER_MODEL=qwen/qwen3.8-27b:free
+OPENROUTER_MODEL=cognitivecomputations/dolphin-mistral-24b-venice-edition
 OPENROUTER_URL=https://openrouter.ai/api/v1/chat/completions
 OPENROUTER_REQUEST_BUDGET_USD=0.01
 OPENROUTER_MAX_OUTPUT_TOKENS=1024
@@ -61,9 +61,15 @@ The health check no longer contacts MongoDB. An unavailable database cannot make
 
 ## 4. Unmoderated-provider selection, cheapest paid fallback, and privacy
 
-Only explicit text models whose catalogue `top_provider.is_moderated` is **exactly false** are eligible. Moderated, unknown and malformed flags are excluded. Dynamic OpenRouter routers, unknown/negative prices, request fees, separately priced reasoning, write surcharges and tier-price overrides are excluded. **This metadata does not guarantee unrestricted output or control every actual routing provider's moderation.** Model/provider policies still apply.
+**Current policy is stricter than an unmoderated provider flag:** only exact IDs in `backend/model_allowlist.json`, backed by a publisher's explicit “uncensored” or “unrestricted” description, can appear or be attempted. Their live canonical slug and publisher artifact must match the audited identity. The additional `top_provider.is_moderated === false` and all pricing/capability guards still apply. An OpenRouter description or model-family name alone is not accepted as publisher proof.
 
-The picker selects a preferred eligible **free** model when available. Each request refreshes the catalogue, tries that model and eligible free alternatives, then at most **one paid model** with the lowest conservative estimated cost for the full conversation and output allowance. There are up to **five total attempts**: up to four free plus one paid, or up to five free if no paid option fits. Selecting a paid ID directly cannot bypass free-first/cheapest routing. After a paid reply, the next turn returns to a free preference if available.
+As verified2026-09-27, the only qualifying live model is **`cognitivecomputations/dolphin-mistral-24b-venice-edition`** (Dolphin Mistral24B Venice Edition / Venice:Uncensored). Its [publisher card](https://huggingface.co/dphn/Dolphin-Mistral-24B-Venice-Edition) states the goal of creating “the most uncensored version of Mistral24B”. This is currently a **paid** listing: $0.20/M input and $0.90/M output at verification time. There is **no verified free listing currently available**, and no `:free` alias is invented. Prices and availability are rechecked live.
+
+Ordinary models, even those with an unmoderated provider, are excluded from both primary requests and fallback. If the audited model disappears, identity metadata changes, or its response reports an unknown model, requests fail clearly rather than switching to an ordinary model. Audited publisher source links are visible in Notes. New exact model IDs require explicit review and deployment; the allowlist is not expanded by keyword matching.
+
+Moderated, unknown and malformed flags, dynamic OpenRouter routers, unknown/negative prices, request fees, separately priced reasoning, write surcharges and tier-price overrides are excluded. **Publisher descriptions are not guarantees of unrestricted answers or every actual provider's behavior.** Model/provider policies still apply; no permissive publisher demo prompt was added.
+
+Free-first/cheapest-paid policy is retained **within the audited set only**. The picker selects a verified free model if one becomes available after audit; otherwise it clearly shows Paidonly before sending. Each request refreshes the catalogue and allows at most one lowest-estimated-cost paid attempt. With only one current paid entry, this means one attempt and no alternative fallback. The general max-five policy remains for a future audited multi-model set; it never authorizes ordinary models. A stale OPENROUTER_MODEL preference cannot override the allowlist.
 
 Default limits: **$0.01 estimated request threshold**, **1024 output tokens**,55 seconds overall and12 seconds per attempt. Estimate uses UTF-8 bytes with margin/message framing, not characters÷4. Only models fitting the context and estimated budget are attempted. Paid provider input/output caps use USD per million tokens, with request fee capped at0, provider fallback disabled, and cheaper-provider routing. Reasoning is disabled when supported; no tools/search/plugins/media are requested.
 

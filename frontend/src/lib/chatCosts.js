@@ -1,6 +1,14 @@
 export const selectableModels = models => {
-  const free = models.filter(model => model.is_free);
-  return free.length ? free : models.slice(0, 1);
+  const verified = models.filter(model => model.publisher_verified === true);
+  const free = verified.filter(model => model.is_free);
+  return free.length ? free : verified.slice(0, 1);
+};
+
+export const routingNotice = policy => {
+  if (!policy) return 'Loading cost policy…';
+  const limit = `${formatCost(policy.estimated_budget_usd)} estimated limit`;
+  if (!policy.eligible_free_models) return `Paid only · No verified free model available · ${limit}`;
+  return policy.paid_fallback_available ? `Free first · Cheapest verified paid fallback · ${limit}` : 'Verified free models only · No verified paid fallback available';
 };
 
 export const formatCost = value => {
